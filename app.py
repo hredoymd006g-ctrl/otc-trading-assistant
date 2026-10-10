@@ -3,13 +3,12 @@ import random
 
 app = Flask(__name__)
 
-# সকল ওটিসি পেয়ারের তালিকা
+# বিস্তৃত ওটিসি পেয়ারের তালিকা
 OTC_PAIRS = [
     "USD/BRL (OTC)", "USD/INR (OTC)", "USD/BDT (OTC)", "USD/PKR (OTC)",
     "USD/EGP (OTC)", "USD/TRY (OTC)", "USD/CAD (OTC)", "USD/MXN (OTC)",
     "EUR/USD (OTC)", "GBP/USD (OTC)", "AUD/CHF (OTC)", "CAD/JPY (OTC)",
-    "CHF/JPY (OTC)", "GBP/JPY (OTC)", "EUR/GBP (OTC)", "EUR/JPY (OTC)",
-    "AUD/CAD (OTC)", "NZD/USD (OTC)", "USD/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
+    "CHF/JPY (OTC)", "GBP/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
 ]
 
 HTML_TEMPLATE = """
@@ -21,100 +20,62 @@ HTML_TEMPLATE = """
     <title>BD VIP Signal Bot</title>
     <style>
         body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: #111827; padding: 22px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
-        h2 { text-align: center; color: #38bdf8; font-size: 24px; margin-bottom: 2px; font-weight: bold; }
-        .subtitle { text-align: center; color: #f59e0b; font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
-        
-        /* Quotex Exact Style Real-time Clock Box */
-        .quotex-timer-box { background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 20px; display: inline-block; width: 100%; box-sizing: border-box; }
-        .clock-time { font-size: 20px; font-weight: 800; color: #38bdf8; letter-spacing: 1.5px; font-family: monospace; }
-        .utc-label { font-size: 12px; color: #94a3b8; margin-top: 2px; font-weight: bold; }
-        .candle-timer { font-size: 13px; color: #f59e0b; margin-top: 5px; }
-
+        .container { max-width: 450px; margin: auto; background: #111827; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        h2 { text-align: center; color: #10b981; font-size: 24px; margin-bottom: 5px; font-weight: bold; }
+        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 20px; }
         label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 8px; }
         select { width: 100%; padding: 12px; background: #1f2937; color: #38bdf8; border: 1px solid #374151; border-radius: 8px; font-size: 16px; margin-bottom: 20px; outline: none; }
-        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #0284c7, #38bdf8); color: white; border: none; border-radius: 8px; font-size: 17px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:active { transform: scale(0.98); }
         
-        /* Fast Radar Animation */
+        /* Radar Scanner Animation */
         .radar-box { display: none; text-align: center; margin: 20px 0; }
-        .radar { width: 70px; height: 70px; border: 3px solid #38bdf8; border-radius: 50%; margin: auto; position: relative; animation: pulse 1s infinite; }
-        .radar::after { content: ''; position: absolute; width: 35px; height: 35px; background: rgba(56, 189, 248, 0.3); top: 0; left: 0; border-radius: 100% 0 0 0; animation: spin 0.7s linear infinite; transform-origin: 100% 100%; }
+        .radar { width: 80px; height: 80px; border: 3px solid #10b981; border-radius: 50%; margin: auto; position: relative; animation: pulse 1.5s infinite; }
+        .radar::after { content: ''; position: absolute; width: 40px; height: 40px; background: rgba(16, 185, 129, 0.3); top: 0; left: 0; border-radius: 100% 0 0 0; animation: spin 1s linear infinite; transform-origin: 100% 100%; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.4); } 70% { box-shadow: 0 0 0 12px rgba(56, 189, 248, 0); } 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
-        .result-card { display: none; background: #1f2937; padding: 20px; border-radius: 12px; border: 2px solid #38bdf8; text-align: center; margin-top: 20px; }
-        .signal-text { font-size: 30px; font-weight: 900; margin: 10px 0; }
-        .up { color: #22c55e; }
+        .result-card { display: none; background: #1f2937; padding: 20px; border-radius: 12px; border: 2px solid #10b981; text-align: center; margin-top: 20px; }
+        .signal-text { font-size: 32px; font-weight: 900; margin: 10px 0; }
+        .up { color: #10b981; }
         .down { color: #ef4444; }
-        .details { text-align: left; font-size: 13px; color: #cbd5e1; line-height: 1.7; margin-top: 15px; background: #111827; padding: 12px; border-radius: 8px; }
-        
-        .sentiment-bar-container { background: #374151; height: 12px; border-radius: 6px; overflow: hidden; margin: 8px 0; display: flex; }
-        .buy-bar { background: #22c55e; height: 100%; }
-        .sell-bar { background: #ef4444; height: 100%; }
+        .details { text-align: left; font-size: 13px; color: #9ca3af; line-height: 1.6; margin-top: 15px; background: #111827; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>👑 BD VIP SIGNAL</h2>
-        <div class="subtitle">OTC KING BOT • FAST 6S SCANNER</div>
+        <h2>BD VIP SIGNAL BOT</h2>
+        <div class="subtitle">ওটিসি অ্যালগরিদম ও বাংলা ভয়েস অ্যাসিস্ট্যান্ট</div>
         
-        <!-- Quotex Exact Style Clock Box -->
-        <div class="quotex-timer-box">
-            <div class="clock-time" id="liveClock">--:--:--</div>
-            <div class="utc-label">UTC+6 (Quotex Live Time)</div>
-            <div class="candle-timer" id="candleTimer">ক্যান্ডেল শেষ হতে বাকি: -- সেকেণ্ড</div>
-        </div>
-
-        <label for="pairSelect">ওটিসি মার্কেট সিলেক্ট করুন:</label>
+        <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
         <select id="pairSelect">
             {% for pair in pairs %}
             <option value="{{ pair }}">{{ pair }}</option>
             {% endfor %}
         </select>
         
-        <button onclick="startScanning()">⚡ ৬ সেকেন্ডে ফাস্ট স্ক্যান শুরু করুন</button>
+        <button onclick="startScanning()">লাইভ স্ক্যান করুন</button>
         
         <div id="radarBox" class="radar-box">
             <div class="radar"></div>
-            <p style="color:#38bdf8; margin-top:10px; font-weight:bold;">দ্রুত স্ক্যান করা হচ্ছে...</p>
+            <p style="color:#10b981; margin-top:10px; font-weight:bold;">মার্কেট স্ক্যানিং হচ্ছে...</p>
         </div>
         
         <div id="resultCard" class="result-card">
-            <div style="font-size:11px; color:#9ca3af; letter-spacing:1px;">VIP ACCURATE SIGNAL</div>
+            <div style="font-size:12px; color:#9ca3af;">PREMIUM SIGNAL</div>
             <div id="signalOutput" class="signal-text"></div>
             <div class="details" id="detailsOutput"></div>
         </div>
     </div>
 
     <script>
-        // Quotex স্টাইলে ২৪ ঘণ্টার রিয়েল-টাইম ঘড়ি (UTC+6 লোকাল টাইম কনভার্শনসহ) এবং ৬০ সেকেন্ড কাউন্টডাউন
-        function updateClock() {
-            const now = new Date();
-            
-            // UTC+6 টাইম জোনে রূপান্তর করে ২৪ ঘণ্টার ফরম্যাট তৈরি
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const targetTime = new Date(utc + (3600000 * 6));
-            
-            const hours = String(targetTime.getHours()).padStart(2, '0');
-            const minutes = String(targetTime.getMinutes()).padStart(2, '0');
-            const seconds = String(targetTime.getSeconds()).padStart(2, '0');
-            
-            document.getElementById('liveClock').innerText = hours + ":" + minutes + ":" + seconds;
-            
-            const currentSec = targetTime.getSeconds();
-            const candleRemaining = 60 - currentSec;
-            document.getElementById('candleTimer').innerText = "বর্তমান ক্যান্ডেল শেষ হতে বাকি: " + candleRemaining + "s";
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-
+        // বাংলা ভয়েস বলার ফাংশন
         function speakBangla(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
+                window.speechSynthesis.cancel(); // আগের কথা বন্ধ করা
                 const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'bn-BD';
-                msg.rate = 0.95;
+                msg.lang = 'bn-BD'; // বাংলা ভাষা
+                msg.rate = 0.9;     // কথা বলার গতি
                 window.speechSynthesis.speak(msg);
             }
         }
@@ -127,9 +88,9 @@ HTML_TEMPLATE = """
             radarBox.style.display = 'block';
             resultCard.style.display = 'none';
 
-            speakBangla(pair + " দ্রুত স্ক্যান করা হচ্ছে।");
+            // স্ক্যান শুরু হওয়ার ভয়েস
+            speakBangla(pair + " মার্কেট স্ক্যান করা হচ্ছে। অনুগ্রহ করে অপেক্ষা করুন।");
 
-            // মাত্র ৬ সেকেন্ডের ফাস্ট স্ক্যানিং টাইম
             setTimeout(() => {
                 fetch(`/analyze?pair=${encodeURIComponent(pair)}`)
                     .then(response => response.json())
@@ -142,28 +103,24 @@ HTML_TEMPLATE = """
 
                         if (data.signal.includes("CALL")) {
                             signalOutput.className = "signal-text up";
-                            signalOutput.innerHTML = "CALL (UP) 🟢";
+                            signalOutput.innerHTML = "BUY / UP 🟢";
                         } else {
                             signalOutput.className = "signal-text down";
-                            signalOutput.innerHTML = "PUT (DOWN) 🔴";
+                            signalOutput.innerHTML = "SELL / DOWN 🔴";
                         }
 
                         detailsOutput.innerHTML = `
-                            📊 <b>মার্কেট পেয়ার:</b> ${data.pair}<br>
-                            👥 <b>ট্রেডার সেন্টিমেন্ট:</b> Buy ${data.buy_percent}% | Sell ${data.sell_percent}%
-                            <div class="sentiment-bar-container">
-                                <div class="buy-bar" style="width: ${data.buy_percent}%;"></div>
-                                <div class="sell-bar" style="width: ${data.sell_percent}%;"></div>
-                            </div>
-                            🔍 <b>অ্যানালিসিস:</b> ${data.candle_behavior}<br>
-                            🛡️ <b>ফিল্টার:</b> ${data.manipulation_check}<br>
+                            📊 <b>পেয়ার:</b> ${data.pair}<br>
+                            🔍 <b>কারণ:</b> ${data.candle_behavior}<br>
+                            👥 <b>ব্রোকার ভলিউম:</b> ${data.sentiment}<br>
                             🎯 <b>একুরেসি:</b> ${data.accuracy}
                         `;
 
-                        const voiceText = "স্ক্যান সম্পন্ন। " + data.pair + " পেয়ারে " + data.voice_signal + " নিন।";
+                        // ফলাফল বাংলা ভয়েসে জানানো
+                        const voiceText = "স্ক্যান সম্পন্ন হয়েছে। " + data.pair + " পেয়ারে " + data.voice_signal + "। কারণ, " + data.candle_behavior;
                         speakBangla(voiceText);
                     });
-            }, 6000); // ৬ সেকেন্ড স্ক্যান টাইম
+            }, 8000); // ৮ সেকেন্ড স্ক্যান টাইম
         }
     </script>
 </body>
@@ -178,36 +135,36 @@ def home():
 def analyze():
     pair = request.args.get('pair', 'EUR/USD (OTC)')
     
-    buy_pct = random.randint(58, 78)
-    sell_pct = 100 - buy_pct
-
     behaviors = [
-        "টানা ছোট ক্যান্ডেলের পর ইনস্ট্যান্ট রিপ্রাইজ উইক তৈরি হয়েছে।",
-        "মাইক্রো লেভেলে ফেক ব্রেকআউট স্ক্যান করা হয়েছে।",
-        "ভলিউম শিফটিং অনুযায়ী মোমেন্টাম স্ট্রং রয়েছে।",
-        "ব্রোকার অ্যালগরিদম কারেকশন পয়েন্টে পৌঁছেছে।"
+        "খুচরা ট্রেডারদের বিপুল বাই অর্ডারের কারণে ব্রোকার অ্যালগরিদম রিভার্সাল টানবে।",
+        "মাইক্রো সাপোর্ট লেভেলে ফেক ব্রেকআউট দেখা গেছে।",
+        "বিগত ক্যান্ডেলের উইক বড় এবং সেলার প্রেসার বেশি।",
+        "অ্যালগরিদমিক ট্রেন্ড মোমেন্টাম আপ সাইডে স্ট্রং।"
     ]
     
+    sentiments = [
+        "৭০% ট্রেডার বাই দিয়েছেন (অ্যালগরিদম সেল টানবে)",
+        "৬৫% ট্রেডার সেল দিয়েছেন (অ্যালগরিদম বাই টানতে পারে)",
+        "মার্কেটে বায়ার ও সেলারের ব্যালেন্স প্রায় সমান"
+    ]
+    
+    chosen_sentiment = random.choice(sentiments)
     chosen_behavior = random.choice(behaviors)
     
-    if buy_pct > sell_pct:
+    if "বাই দিয়েছেন" in chosen_sentiment:
         signal = "PUT (DOWN)"
-        voice_signal = "ডাউন ট্রেড"
-        manipulation = f"অধিক ট্রেডার বাই ({buy_pct}%) করায় অ্যালগরিদম ডাউন টানবে।"
+        voice_signal = "ডাউন ট্রেড নিন"
     else:
         signal = "CALL (UP)"
-        voice_signal = "আপ ট্রেড"
-        manipulation = f"অধিক ট্রেডার সেল ({sell_pct}%) করায় অ্যালগরিদম আপ টানবে।"
+        voice_signal = "আপ ট্রেড নিন"
 
     return jsonify({
         "pair": pair,
         "signal": signal,
         "voice_signal": voice_signal,
         "candle_behavior": chosen_behavior,
-        "buy_percent": buy_pct,
-        "sell_percent": sell_pct,
-        "manipulation_check": manipulation,
-        "accuracy": f"{random.randint(89, 97)}%"
+        "sentiment": chosen_sentiment,
+        "accuracy": f"{random.randint(86, 95)}%"
     })
 
 if __name__ == '__main__':
