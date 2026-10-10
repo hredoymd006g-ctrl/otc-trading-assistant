@@ -22,12 +22,8 @@ HTML_TEMPLATE = """
         body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 450px; margin: auto; background: #111827; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
         h2 { text-align: center; color: #10b981; font-size: 24px; margin-bottom: 5px; font-weight: bold; }
-        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 15px; }
+        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 20px; }
         
-        /* Voice Enabler Button for Mobile Apps */
-        .voice-enable-btn { width: 100%; padding: 10px; background: #374151; color: #f59e0b; border: 1px solid #f59e0b; border-radius: 8px; font-size: 14px; font-weight: bold; margin-bottom: 15px; cursor: pointer; text-align: center; }
-        .voice-enable-btn:active { background: #f59e0b; color: #111827; }
-
         label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 8px; }
         select { width: 100%; padding: 12px; background: #1f2937; color: #38bdf8; border: 1px solid #374151; border-radius: 8px; font-size: 16px; margin-bottom: 20px; outline: none; }
         button.scan-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -50,10 +46,7 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <h2>BD VIP SIGNAL BOT</h2>
-        <div class="subtitle">ওটিসি অ্যালগরিদম ও বাংলা ভয়েস অ্যাসিস্ট্যান্ট</div>
-        
-        <!-- Mobile Audio Unlock Button -->
-        <button class="voice-enable-btn" onclick="enableMobileVoice()">🔊 ভয়েস সাউন্ড অ্যাক্টিভ করুন (এখানে চাপুন)</button>
+        <div class="subtitle">ওটিসি অ্যালগরিদম ও সুপার ফাস্ট সাউন্ড অ্যালার্ট</div>
 
         <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
         <select id="pairSelect">
@@ -77,30 +70,24 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        let voiceReady = false;
-
-        // মোবাইল অ্যাপে ভয়েস আনলক করার স্পেশাল ফাংশন
-        function enableMobileVoice() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance("ভয়েস সিস্টেম অ্যাক্টিভ হয়েছে");
-                msg.lang = 'bn-BD';
-                msg.rate = 1.0;
-                window.speechSynthesis.speak(msg);
-                voiceReady = true;
-                alert("✅ বাংলা ভয়েস রেডি হয়েছে!");
-            } else {
-                alert("আপনার ব্রাউজারে টেক্সট-টু-স্পিচ সাপোর্ট করছে না।");
-            }
-        }
-
-        function speakBangla(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'bn-BD';
-                msg.rate = 0.9;
-                window.speechSynthesis.speak(msg);
+        // মোবাইল ফ্রেন্ডলি অডিও অ্যালার্ট (বীপ সাউন্ড জেনারেটর)
+        function playBeepSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // ফ্রিকোয়েন্সি
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.4); // ০.৪ সেকেন্ডের সাউন্ড
+            } catch(e) {
+                console.log("Audio not supported");
             }
         }
 
@@ -112,8 +99,8 @@ HTML_TEMPLATE = """
             radarBox.style.display = 'block';
             resultCard.style.display = 'none';
 
-            // স্ক্যান শুরু হওয়ার ভয়েস
-            speakBangla(pair + " মার্কেট স্ক্যান করা হচ্ছে। অনুগ্রহ করে অপেক্ষা করুন।");
+            // স্ক্যান শুরু হওয়ার সময় ছোট বীপ সাউন্ড
+            playBeepSound();
 
             setTimeout(() => {
                 fetch(`/analyze?pair=${encodeURIComponent(pair)}`)
@@ -140,9 +127,9 @@ HTML_TEMPLATE = """
                             🎯 <b>একুরেসি:</b> ${data.accuracy}
                         `;
 
-                        // ফলাফল বাংলা ভয়েসে জানানো
-                        const voiceText = "স্ক্যান সম্পন্ন হয়েছে। " + data.pair + " পেয়ারে " + data.voice_signal + "। কারণ, " + data.candle_behavior;
-                        speakBangla(voiceText);
+                        // স্ক্যান শেষ হওয়ার পর সিগন্যাল অ্যালার্ট সাউন্ড (ডাবল বীপ)
+                        playBeepSound();
+                        setTimeout(playBeepSound, 200);
                     });
             }, 8000); // ৮ সেকেন্ড স্ক্যান টাইম
         }
