@@ -25,10 +25,11 @@ HTML_TEMPLATE = """
         h2 { text-align: center; color: #38bdf8; font-size: 24px; margin-bottom: 2px; font-weight: bold; }
         .subtitle { text-align: center; color: #f59e0b; font-size: 13px; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Quotex Real-time 24h Clock Box */
-        .timer-box { background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
-        .clock-time { font-size: 19px; font-weight: bold; color: #38bdf8; letter-spacing: 1px; }
-        .candle-timer { font-size: 13px; color: #f59e0b; margin-top: 3px; }
+        /* Quotex Exact Style Real-time Clock Box */
+        .quotex-timer-box { background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 10px; text-align: center; margin-bottom: 20px; display: inline-block; width: 100%; box-sizing: border-box; }
+        .clock-time { font-size: 20px; font-weight: 800; color: #38bdf8; letter-spacing: 1.5px; font-family: monospace; }
+        .utc-label { font-size: 12px; color: #94a3b8; margin-top: 2px; font-weight: bold; }
+        .candle-timer { font-size: 13px; color: #f59e0b; margin-top: 5px; }
 
         label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 8px; }
         select { width: 100%; padding: 12px; background: #1f2937; color: #38bdf8; border: 1px solid #374151; border-radius: 8px; font-size: 16px; margin-bottom: 20px; outline: none; }
@@ -58,9 +59,10 @@ HTML_TEMPLATE = """
         <h2>👑 BD VIP SIGNAL</h2>
         <div class="subtitle">OTC KING BOT • FAST 6S SCANNER</div>
         
-        <!-- Quotex 24h Real-time Clock Box -->
-        <div class="timer-box">
-            <div class="clock-time" id="liveClock">00:00:00 (Quotex Time)</div>
+        <!-- Quotex Exact Style Clock Box -->
+        <div class="quotex-timer-box">
+            <div class="clock-time" id="liveClock">--:--:--</div>
+            <div class="utc-label">UTC+6 (Quotex Live Time)</div>
             <div class="candle-timer" id="candleTimer">ক্যান্ডেল শেষ হতে বাকি: -- সেকেণ্ড</div>
         </div>
 
@@ -86,17 +88,21 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        // Quotex ২৪ ঘণ্টার রিয়েল-টাইম ফরম্যাট ঘড়ি ও ৬০ সেকেন্ড কাউন্টডাউন
+        // Quotex স্টাইলে ২৪ ঘণ্টার রিয়েল-টাইম ঘড়ি (UTC+6 লোকাল টাইম কনভার্শনসহ) এবং ৬০ সেকেন্ড কাউন্টডাউন
         function updateClock() {
             const now = new Date();
-            // ২৪ ঘণ্টার ফরম্যাট (HH:MM:SS) তৈরি করা
-            const hours = String(now.getUTCHours()).padStart(2, '0');
-            const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-            const seconds = String(now.getUTCSeconds()).padStart(2, '0');
             
-            document.getElementById('liveClockinnerText', document.getElementById('liveClock').innerText = hours + ":" + minutes + ":" + seconds + " (Quotex Time)");
+            // UTC+6 টাইম জোনে রূপান্তর করে ২৪ ঘণ্টার ফরম্যাট তৈরি
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const targetTime = new Date(utc + (3600000 * 6));
             
-            const currentSec = now.getUTCSeconds();
+            const hours = String(targetTime.getHours()).padStart(2, '0');
+            const minutes = String(targetTime.getMinutes()).padStart(2, '0');
+            const seconds = String(targetTime.getSeconds()).padStart(2, '0');
+            
+            document.getElementById('liveClock').innerText = hours + ":" + minutes + ":" + seconds;
+            
+            const currentSec = targetTime.getSeconds();
             const candleRemaining = 60 - currentSec;
             document.getElementById('candleTimer').innerText = "বর্তমান ক্যান্ডেল শেষ হতে বাকি: " + candleRemaining + "s";
         }
@@ -123,7 +129,7 @@ HTML_TEMPLATE = """
 
             speakBangla(pair + " দ্রুত স্ক্যান করা হচ্ছে।");
 
-            // স্ক্যানিং সময় ১৫ সেকেন্ড থেকে কমিয়ে মাত্র ৬ সেকেন্ড করা হলো
+            // মাত্র ৬ সেকেন্ডের ফাস্ট স্ক্যানিং টাইম
             setTimeout(() => {
                 fetch(`/analyze?pair=${encodeURIComponent(pair)}`)
                     .then(response => response.json())
