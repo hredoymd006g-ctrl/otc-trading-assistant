@@ -6,7 +6,7 @@ app = Flask(__name__)
 # বিস্তৃত ওটিসি পেয়ারের তালিকা
 OTC_PAIRS = [
     "USD/BRL (OTC)", "USD/INR (OTC)", "USD/BDT (OTC)", "USD/PKR (OTC)",
-    "USD/EGP (OTC)", , "USD/CAD (OTC)", "USD/MXN (OTC)",
+    "USD/EGP (OTC)", "USD/TRY (OTC)", "USD/CAD (OTC)", "USD/MXN (OTC)",
     "EUR/USD (OTC)", "GBP/USD (OTC)", "AUD/CHF (OTC)", "CAD/JPY (OTC)",
     "CHF/JPY (OTC)", "GBP/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
 ]
