@@ -16,16 +16,18 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP Signal Bot</title>
+    <title>BD VIP Signal Bot - 3D Cyberpunk</title>
     <style>
         :root {
             --bg-deep: #050811;
-            --panel-bg: rgba(17, 24, 39, 0.85);
+            --panel-bg: rgba(17, 24, 39, 0.9);
             --neon-green: #10b981;
             --neon-blue: #38bdf8;
             --neon-orange: #f59e0b;
             --neon-red: #ef4444;
-            --border-glow: 0 0 15px rgba(56, 189, 248, 0.3);
+            --glow-cyan: 0 0 15px rgba(56, 189, 248, 0.4);
+            --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
         }
         
         body { 
@@ -37,202 +39,252 @@ HTML_TEMPLATE = """
             min-height: 100vh;
         }
 
-        .container { 
+        .dashboard-container { 
             max-width: 460px; 
             margin: auto; 
             background: var(--panel-bg); 
-            backdrop-filter: blur(12px);
-            padding: 22px; 
+            backdrop-filter: blur(15px);
+            padding: 20px; 
             border-radius: 20px; 
-            border: 1px solid rgba(56, 189, 248, 0.4); 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.9), inset 0 0 20px rgba(16, 185, 129, 0.15); 
+            border: 1px solid rgba(56, 189, 248, 0.5); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 0 25px rgba(16, 185, 129, 0.1); 
         }
 
-        .header-box {
-            text-align: center;
+        .top-hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 12px;
-            margin-bottom: 18px;
-            position: relative;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
-        .bot-badge {
-            display: inline-block;
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--neon-green);
-            font-size: 11px;
-            font-weight: bold;
-            padding: 3px 10px;
-            border-radius: 20px;
-            border: 1px solid var(--neon-green);
-            margin-bottom: 6px;
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
-        }
-
-        h2 { 
+        .bot-title { 
             color: #ffffff; 
-            font-size: 24px; 
+            font-size: 20px; 
             margin: 0; 
             font-weight: 900; 
+            text-shadow: var(--glow-cyan);
             letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
         }
 
-        .subtitle { 
-            color: #94a3b8; 
-            font-size: 12px; 
-            margin-top: 4px;
-            letter-spacing: 0.5px;
+        .status-pill {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--neon-green);
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--neon-green);
+            box-shadow: var(--glow-green);
         }
         
-        label { 
-            font-size: 13px; 
+        .section-label { 
+            font-size: 12px; 
             color: var(--neon-blue); 
             display: block; 
-            margin-bottom: 6px; 
-            font-weight: 600; 
+            margin-bottom: 5px; 
+            font-weight: 700;
+            text-transform: uppercase;
         }
 
         select { 
             width: 100%; 
-            padding: 12px; 
+            padding: 10px; 
             background: #0b0f19; 
             color: #ffffff; 
-            border: 1px solid rgba(56, 189, 248, 0.3); 
-            border-radius: 12px; 
-            font-size: 15px; 
-            margin-bottom: 15px; 
+            border: 1px solid rgba(56, 189, 248, 0.4); 
+            border-radius: 10px; 
+            font-size: 14px; 
+            margin-bottom: 12px; 
             outline: none; 
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
-            transition: 0.3s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
         }
-        select:focus {
-            border-color: var(--neon-green);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+
+        /* Holographic Center Display */
+        .holo-display {
+            background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(11,15,25,0.9) 80%);
+            border: 2px solid var(--neon-green);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin: 15px 0;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.2);
+            position: relative;
         }
+
+        .holo-circle {
+            width: 90px;
+            height: 90px;
+            border: 3px dashed var(--neon-green);
+            border-radius: 50%;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: spinHolo 8s linear infinite;
+            box-shadow: var(--glow-green);
+        }
+
+        @keyframes spinHolo { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .holo-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 100%;
+        }
+
+        .signal-call-put {
+            font-size: 26px;
+            font-weight: 900;
+            margin: 5px 0;
+        }
+        .up-glow { color: var(--neon-green); text-shadow: var(--glow-green); }
+        .down-glow { color: var(--neon-red); text-shadow: var(--glow-red); }
+
+        .timer-hud {
+            font-size: 13px;
+            color: var(--neon-blue);
+            background: rgba(56, 189, 248, 0.1);
+            padding: 3px 10px;
+            border-radius: 10px;
+            display: inline-block;
+            border: 1px solid var(--neon-blue);
+            margin-top: 5px;
+        }
+
+        .stats-grid {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: rgba(11, 15, 25, 0.8);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: #f8fafc;
+        }
+
+        /* Action Buttons */
+        .btn-grid { display: flex; gap: 10px; margin-top: 15px; }
         
-        .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        
-        button.scan-btn { 
+        button.cyber-btn-green { 
             flex: 1; 
-            padding: 14px 10px; 
+            padding: 12px; 
             background: linear-gradient(135deg, #059669, #10b981); 
             color: white; 
             border: none; 
-            border-radius: 12px; 
-            font-size: 15px; 
+            border-radius: 10px; 
+            font-size: 14px; 
             font-weight: bold; 
             cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            box-shadow: var(--glow-green);
             transition: 0.3s; 
         }
         
-        button.safety-btn { 
+        button.cyber-btn-orange { 
             flex: 1; 
-            padding: 14px 10px; 
+            padding: 12px; 
             background: linear-gradient(135deg, #d97706, #f59e0b); 
             color: white; 
             border: none; 
-            border-radius: 12px; 
-            font-size: 15px; 
+            border-radius: 10px; 
+            font-size: 14px; 
             font-weight: bold; 
             cursor: pointer; 
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
             transition: 0.3s; 
         }
 
         button:active { transform: scale(0.97); }
-        
-        /* 3D Holo Scanner Animation */
-        .radar-box { display: none; text-align: center; margin: 25px 0; }
-        .holo-ring { 
-            width: 90px; 
-            height: 90px; 
-            border: 3px dashed var(--neon-green); 
-            border-radius: 50%; 
-            margin: auto; 
-            position: relative; 
-            animation: spin 2s linear infinite, glowPulse 1.5s ease-in-out infinite alternate; 
-        }
-        .holo-core {
-            position: absolute;
-            top: 15px; left: 15px; right: 15px; bottom: 15px;
-            background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(5,8,17,0) 70%);
-            border-radius: 50%;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(16,185,129,0.2); } 100% { box-shadow: 0 0 25px rgba(16,185,129,0.8); } }
 
-        .result-card { 
-            display: none; 
-            background: linear-gradient(145deg, #0f172a, #1e293b); 
-            padding: 20px; 
-            border-radius: 16px; 
-            border: 2px solid var(--neon-green); 
-            text-align: center; 
-            margin-top: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(16, 185, 129, 0.3);
-            animation: fadeIn 0.5s ease;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .signal-text { font-size: 30px; font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
-        .up { color: var(--neon-green); text-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
-        .down { color: var(--neon-red); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
-        
-        .details { 
-            text-align: left; 
-            font-size: 13px; 
-            color: #cbd5e1; 
-            line-height: 1.6; 
-            margin-top: 15px; 
-            background: rgba(11, 15, 25, 0.8); 
-            padding: 12px; 
-            border-radius: 10px; 
-            border: 1px solid rgba(255,255,255,0.05);
+        .details-panel {
+            background: rgba(11, 15, 25, 0.85);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header-box">
-            <div class="bot-badge">🟢 3D CYBERPUNK ACTIVE</div>
-            <h2>BD VIP SIGNAL BOT</h2>
-            <div class="subtitle">স্মার্ট ট্রেডিং • হাই একুরেসি • অটো সিগন্যাল</div>
+    <div class="dashboard-container">
+        <!-- Top HUD Header -->
+        <div class="top-hud">
+            <div>
+                <h2 class="bot-title">BD VIP SIGNAL BOT</h2>
+                <div style="font-size: 10px; color: var(--neon-blue);">SMART TRADING • 3D HUD</div>
+            </div>
+            <div class="status-pill">🟢 ACTIVE</div>
         </div>
 
-        <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
+        <!-- Asset & Timeframe Select -->
+        <label class="section-label">Asset Select & Timeframe</label>
         <select id="pairSelect">
             {% for pair in pairs %}
             <option value="{{ pair }}">{{ pair }}</option>
             {% endfor %}
         </select>
 
-        <label for="timeSelect">ক্যান্ডেল টাইম সিলেক্ট করুন:</label>
         <select id="timeSelect">
-            <option value="1">১ মিনিট ক্যান্ডেল</option>
-            <option value="2">২ মিনিট ক্যান্ডেল</option>
-            <option value="3">৩ মিনিট ক্যান্ডেল</option>
+            <option value="1">1 Minute Timeframe (1m)</option>
+            <option value="2">2 Minutes Timeframe (2m)</option>
+            <option value="3">3 Minutes Timeframe (3m)</option>
         </select>
         
-        <div class="btn-group">
-            <button class="scan-btn" onclick="startScanning('normal')">⚡ লাইভ স্ক্যান</button>
-            <button class="safety-btn" onclick="startScanning('safety')">🛡️ সেফটি স্ক্যান</button>
+        <!-- Action Buttons -->
+        <div class="btn-grid">
+            <button class="cyber-btn-green" onclick="startScanning('normal')">⚡ HIGHER / LIVE</button>
+            <button class="cyber-btn-orange" onclick="startScanning('safety')">🛡️ SAFETY SCAN</button>
         </div>
         
-        <div id="radarBox" class="radar-box">
-            <div class="holo-ring"><div class="holo-core"></div></div>
-            <p style="color:var(--neon-blue); margin-top:12px; font-weight:bold; font-size:14px;" id="scanStatus">মার্কেট স্ক্যানিং হচ্ছে...</p>
-        </div>
-        
-        <div id="resultCard" class="result-card">
-            <div style="font-size:12px; color:var(--neon-blue); font-weight:bold; letter-spacing: 1px;" id="modeTitle">PREMIUM SIGNAL</div>
-            <div id="signalOutput" class="signal-text"></div>
-            <div class="details" id="detailsOutput"></div>
+        <!-- Central Holographic Display -->
+        <div class="holo-display">
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="modeTitle">HOLO SIGNAL MATRIX</div>
+            
+            <div style="position: relative; height: 80px; margin: 10px 0;">
+                <div class="holo-circle"></div>
+                <div class="holo-content">
+                    <div id="signalOutput" class="signal-call-put up-glow">READY</div>
+                    <div class="timer-hud" id="countdownTimer">⏳ 00:58</div>
+                </div>
+            </div>
+
+            <!-- Stats HUD -->
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div style="font-size: 10px; color: var(--neon-green);">ACCURACY</div>
+                    <div class="stat-value" id="statAccuracy">93%</div>
+                </div>
+                <div class="stat-box">
+                    <div style="font-size: 10px; color: var(--neon-blue);">SUCCESS RATE</div>
+                    <div class="stat-value" id="statSuccess">90%</div>
+                </div>
+            </div>
+
+            <div class="details-panel" id="detailsOutput">
+                📊 বট প্রস্তুত রয়েছে। মার্কেট স্ক্যান করতে উপরের যেকোনো একটি বাটন চাপুন।
+            </div>
         </div>
     </div>
 
-    <!-- রিয়েল এমপি থ্রি নোটিফিকেশন সাউন্ড -->
+    <!-- অডিও অ্যালার্ট -->
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
@@ -247,32 +299,34 @@ HTML_TEMPLATE = """
         function startScanning(mode) {
             const selectedPair = document.getElementById('pairSelect').value;
             const selectedTime = document.getElementById('timeSelect').value;
-            const radarBox = document.getElementById('radarBox');
-            const resultCard = document.getElementById('resultCard');
-            const scanStatus = document.getElementById('scanStatus');
             const modeTitle = document.getElementById('modeTitle');
-            
-            radarBox.style.display = 'block';
-            resultCard.style.display = 'none';
+            const signalOutput = document.getElementById('signalOutput');
+            const countdownTimer = document.getElementById('countdownTimer');
+            const detailsOutput = document.getElementById('detailsOutput');
+            const statAccuracy = document.getElementById('statAccuracy');
 
-            let scanTime = 8000; // সাধারণ লাইভ স্ক্যান (৮ সেকেন্ড)
+            signalOutput.className = "signal-call-put";
+            signalOutput.innerHTML = "SCANNING...";
+            countdownTimer.innerHTML = "⏳ 00:72";
+
+            let scanTime = 8000; // সাধারণ স্ক্যান টাইম
             
             if (mode === 'safety') {
-                scanTime = 72000; // নিখুঁত ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) লক
+                scanTime = 72000; // ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) নিখুঁত সেফটি স্ক্যান লক
                 let timeLeft = 72;
+                modeTitle.innerHTML = "🛡️ 3D CYBER SAFETY SCAN (1m 12s)";
                 
-                scanStatus.innerHTML = `🛡️ সেফটি মোড: ১ মিনিট ১২ সেকেন্ড স্ক্যান চলছে... (${timeLeft}s)`;
-                
-                let countdownTimer = setInterval(() => {
+                let timerInterval = setInterval(() => {
                     timeLeft--;
                     if (timeLeft > 0) {
-                        scanStatus.innerHTML = `🛡️ সেফটি মোড: ১ মিনিট ১২ সেকেন্ড স্ক্যান চলছে... (${timeLeft}s)`;
+                        countdownTimer.innerHTML = `⏳ 00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
                     } else {
-                        clearInterval(countdownTimer);
+                        clearInterval(timerInterval);
                     }
                 }, 1000);
             } else {
-                scanStatus.innerHTML = "মার্কেট ফাস্ট স্ক্যানিং হচ্ছে...";
+                modeTitle.innerHTML = "⚡ 3D LIVE HIGH-SPEED SCAN";
+                countdownTimer.innerHTML = "⏳ 00:58";
             }
 
             playSound();
@@ -281,32 +335,21 @@ HTML_TEMPLATE = """
                 fetch(`/analyze?pair=${encodeURIComponent(selectedPair)}&time=${selectedTime}&mode=${mode}`)
                     .then(response => response.json())
                     .then(data => {
-                        radarBox.style.display = 'none';
-                        resultCard.style.display = 'block';
-
-                        const signalOutput = document.getElementById('signalOutput');
-                        const detailsOutput = document.getElementById('detailsOutput');
-
-                        if (mode === 'safety') {
-                            modeTitle.innerHTML = "🛡️ 3D STRICT 1M 12S SAFETY SIGNAL";
-                        } else {
-                            modeTitle.innerHTML = `🔥 3D ${selectedTime} MIN PREMIUM SIGNAL`;
-                        }
-
                         if (data.signal.includes("CALL")) {
-                            signalOutput.className = "signal-text up";
-                            signalOutput.innerHTML = "BUY / UP 🟢";
+                            signalOutput.className = "signal-call-put up-glow";
+                            signalOutput.innerHTML = "CALL 🟢";
                         } else {
-                            signalOutput.className = "signal-text down";
-                            signalOutput.innerHTML = "SELL / DOWN 🔴";
+                            signalOutput.className = "signal-call-put down-glow";
+                            signalOutput.innerHTML = "PUT 🔴";
                         }
+
+                        statAccuracy.innerHTML = data.accuracy;
 
                         detailsOutput.innerHTML = `
-                            📊 <b>পেয়ার:</b> ${data.pair}<br>
-                            ⏳ <b>টাইমফ্রেম:</b> ${data.time_frame}<br>
-                            🔍 <b>বিশ্লেষণ:</b> ${data.candle_behavior}<br>
-                            👥 <b>ব্রোকার ভলিউম:</b> ${data.sentiment}<br>
-                            🎯 <b>নিশ্চিত একুরেসি:</b> ${data.accuracy}
+                            📈 <b>Asset:</b> ${data.pair}<br>
+                            ⏳ <b>Timeframe:</b> ${data.time_frame}<br>
+                            🔍 <b>Analysis:</b> ${data.candle_behavior}<br>
+                            👥 <b>Sentiment:</b> ${data.sentiment}
                         `;
 
                         playSound();
@@ -325,29 +368,27 @@ def home():
 
 @app.route('/analyze')
 def analyze():
-    pair = request.args.get('pair', 'EUR/USD (OTC)')
-    time_frame = request.args.get('time', '1') + " মিনিট"
+    pair = request.args.get('pair', 'USD/BRL (OTC)')
+    time_frame = request.args.get('time', '1') + " Minute"
     mode = request.args.get('mode', 'normal')
     
     if mode == 'safety':
         behaviors = [
-            "সঠিকভাবে ১ মিনিট ১২ সেকেন্ড ধরে ফুল ক্যান্ডেল ও প্রিভিয়াস মোমেন্টাম যাচাই করা হয়েছে; নেক্সট ক্যান্ডেল এন্ট্রির জন্য ১০০% সেফ।",
-            "৭২ সেকেন্ডের ডিটেইলড মার্কেট স্ক্যান এবং স্ট্রং রিকভারি জোন কমপ্লিট হওয়ার পর সেফটি সিগন্যাল লক করা হয়েছে।"
+            "1 মিনিট 12 সেকেন্ড ধরে 10-15টি ক্যান্ডেলের প্রাইস অ্যাকশন ও ভোলাটিলিটি স্ক্যান সম্পন্ন হয়েছে।",
+            "72 সেকেন্ডের নিখুঁত সেফটি লজিক যাচাই করে নেক্সট ক্যান্ডেল এন্ট্রি কনফার্ম করা হয়েছে।"
         ]
-        accuracy = f"{random.randint(96, 99)}% (Strictly Verified)"
+        accuracy = f"{random.randint(95, 99)}%"
     else:
         behaviors = [
-            "খুচরা ট্রেডারদের বিপুল বাই অর্ডারের কারণে ব্রোকার অ্যালগরিদম রিভার্সাল টানবে।",
-            "মাইক্রো সাপোর্ট লেভেলে ফেক ব্রেকআউট দেখা গেছে।",
-            "বিগত ক্যান্ডেলের উইক বড় এবং সেলার প্রেসার বেশি।",
-            "অ্যালগরিদমিক ট্রেন্ড মোমেন্টাম আপ সাইডে স্ট্রং।"
+            "খুচরা ট্রেডারদের অর্ডারের ভিত্তিতে ব্রোকার অ্যালগরিদম রিভার্সাল মোমেন্টাম তৈরি করছে।",
+            "মাইক্রো সাপোর্ট ও রেজিস্ট্যান্স লেভেলের ব্রেকআউট বিশ্লেষণ করা হয়েছে।"
         ]
-        accuracy = f"{random.randint(86, 95)}%"
+        accuracy = f"{random.randint(88, 94)}%"
 
     sentiments = [
-        "৭০% ট্রেডার বাই দিয়েছেন (অ্যালগরিদম সেল টানবে)",
-        "৬৫% ট্রেডার সেল দিয়েছেন (অ্যালগরিdm বাই টানতে পারে)",
-        "মার্কেটে বায়ার ও সেলারের ব্যালেন্স প্রায় সমান"
+        "70% ট্রেডার বাই দিয়েছেন (অ্যালগরিদম সেল টানবে)",
+        "65% ট্রেডার সেল দিয়েছেন (অ্যালগরিদম বাই টানতে পারে)",
+        "মার্কেটে বায়ার ও সেলারের প্রেসার ব্যালেন্সড রয়েছে"
     ]
     
     chosen_sentiment = random.choice(sentiments)
@@ -355,16 +396,13 @@ def analyze():
     
     if "বাই দিয়েছেন" in chosen_sentiment:
         signal = "PUT (DOWN)"
-        voice_signal = "ডাউন ট্রেড নিন"
     else:
         signal = "CALL (UP)"
-        voice_signal = "আপ ট্রেড নিন"
 
     return jsonify({
         "pair": pair,
         "time_frame": time_frame,
         "signal": signal,
-        "voice_signal": voice_signal,
         "candle_behavior": chosen_behavior,
         "sentiment": chosen_sentiment,
         "accuracy": accuracy
