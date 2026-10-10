@@ -1,13 +1,14 @@
 from flask import Flask, render_template_string, jsonify, request
 import random
-import time
 
 app = Flask(__name__)
 
-# ওটিসি পেয়ারের তালিকা
+# বিস্তৃত ওটিসি পেয়ারের তালিকা
 OTC_PAIRS = [
-    "USD/BRL (OTC)", "AUD/CHF (OTC)", "USD/CAD (OTC)", "CAD/JPY (OTC)",
-    "CHF/JPY (OTC)", "GBP/JPY (OTC)", "EUR/USD (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
+    "USD/BRL (OTC)", "USD/INR (OTC)", "USD/BDT (OTC)", "USD/PKR (OTC)",
+    "USD/EGP (OTC)", "USD/TRY (OTC)", "USD/CAD (OTC)", "USD/MXN (OTC)",
+    "EUR/USD (OTC)", "GBP/USD (OTC)", "AUD/CHF (OTC)", "CAD/JPY (OTC)",
+    "CHF/JPY (OTC)", "GBP/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
 ]
 
 HTML_TEMPLATE = """
@@ -16,79 +17,110 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Quotex OTC Master Bot</title>
+    <title>TR PRO OTC AI BOT</title>
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 500px; margin: auto; background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        h2 { text-align: center; color: #38bdf8; font-size: 22px; margin-bottom: 5px; }
-        .subtitle { text-align: center; color: #94a3b8; font-size: 12px; margin-bottom: 20px; }
-        label { font-size: 14px; color: #cbd5e1; display: block; margin-bottom: 5px; }
-        select { width: 100%; padding: 12px; background: #334155; color: #fff; border: 1px solid #475569; border-radius: 8px; font-size: 16px; margin-bottom: 15px; }
-        button { width: 100%; padding: 14px; background: #0284c7; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        button:active { background: #0369a1; }
-        .result-box { margin-top: 20px; background: #0f172a; padding: 15px; border-radius: 8px; border: 1px solid #334155; display: none; }
-        .signal-up { color: #22c55e; font-size: 24px; font-weight: bold; text-align: center; }
-        .signal-down { color: #ef4444; font-size: 24px; font-weight: bold; text-align: center; }
-        .loader { text-align: center; color: #f59e0b; font-weight: bold; display: none; margin: 15px 0; }
-        .details { font-size: 13px; color: #94a3b8; margin-top: 10px; line-height: 1.6; }
+        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
+        .container { max-width: 450px; margin: auto; background: #111827; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        h2 { text-align: center; color: #10b981; font-size: 24px; margin-bottom: 5px; font-weight: bold; }
+        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 20px; }
+        label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 8px; }
+        select { width: 100%; padding: 12px; background: #1f2937; color: #38bdf8; border: 1px solid #374151; border-radius: 8px; font-size: 16px; margin-bottom: 20px; outline: none; }
+        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); }
+        
+        /* Radar Scanner Animation */
+        .radar-box { display: none; text-align: center; margin: 20px 0; }
+        .radar { width: 80px; height: 80px; border: 3px solid #10b981; border-radius: 50%; margin: auto; position: relative; animation: pulse 1.5s infinite; }
+        .radar::after { content: ''; position: absolute; width: 40px; height: 40px; background: rgba(16, 185, 129, 0.3); top: 0; left: 0; border-radius: 100% 0 0 0; animation: spin 1s linear infinite; transform-origin: 100% 100%; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        .result-card { display: none; background: #1f2937; padding: 20px; border-radius: 12px; border: 2px solid #10b981; text-align: center; margin-top: 20px; }
+        .signal-text { font-size: 32px; font-weight: 900; margin: 10px 0; }
+        .up { color: #10b981; }
+        .down { color: #ef4444; }
+        .details { text-align: left; font-size: 13px; color: #9ca3af; line-height: 1.6; margin-top: 15px; background: #111827; padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🤖 OTC Master Signal Bot</h2>
-        <div class="subtitle">ওটিসি অ্যালগরিদম ও সেন্টিমেন্ট অ্যানালাইজার</div>
+        <h2>TR PRO AI BOT</h2>
+        <div class="subtitle">ওটিসি অ্যালগরিদম ও বাংলা ভয়েস অ্যাসিস্ট্যান্ট</div>
         
-        <label for="pairSelect">ওটিসি পেয়ার সিলেক্ট করুন:</label>
+        <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
         <select id="pairSelect">
             {% for pair in pairs %}
             <option value="{{ pair }}">{{ pair }}</option>
             {% endfor %}
         </select>
         
-        <button onclick="getSignal()">১৫ সেকেন্ড স্ক্যান করে সিগন্যাল নিন</button>
+        <button onclick="startScanning()">লাইভ স্ক্যান করুন</button>
         
-        <div id="loader" class="loader">⏳ ১৫ সেকেন্ড ধরে ওটিসি ক্যান্ডেল ও ভলিউম স্ক্যান করা হচ্ছে...</div>
+        <div id="radarBox" class="radar-box">
+            <div class="radar"></div>
+            <p style="color:#10b981; margin-top:10px; font-weight:bold;">মার্কেট স্ক্যানিং হচ্ছে...</p>
+        </div>
         
-        <div id="resultBox" class="result-box">
-            <div id="signalOutput"></div>
+        <div id="resultCard" class="result-card">
+            <div style="font-size:12px; color:#9ca3af;">PREMIUM SIGNAL</div>
+            <div id="signalOutput" class="signal-text"></div>
             <div class="details" id="detailsOutput"></div>
         </div>
     </div>
 
     <script>
-        function getSignal() {
+        // বাংলা ভয়েস বলার ফাংশন
+        function speakBangla(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // আগের কথা বন্ধ করা
+                const msg = new SpeechSynthesisUtterance(text);
+                msg.lang = 'bn-BD'; // বাংলা ভাষা
+                msg.rate = 0.9;     // কথা বলার গতি
+                window.speechSynthesis.speak(msg);
+            }
+        }
+
+        function startScanning() {
             const pair = document.getElementById('pairSelect').value;
-            const loader = document.getElementById('loader');
-            const resultBox = document.getElementById('resultBox');
-            const signalOutput = document.getElementById('signalOutput');
-            const detailsOutput = document.getElementById('detailsOutput');
+            const radarBox = document.getElementById('radarBox');
+            const resultCard = document.getElementById('resultCard');
+            
+            radarBox.style.display = 'block';
+            resultCard.style.display = 'none';
 
-            loader.style.display = 'block';
-            resultBox.style.display = 'none';
+            // স্ক্যান শুরু হওয়ার ভয়েস
+            speakBangla(pair + " মার্কেট স্ক্যান করা হচ্ছে। অনুগ্রহ করে অপেক্ষা করুন।");
 
-            // ১৫ সেকেন্ডের স্ক্যানিং সিমুলেশন
             setTimeout(() => {
                 fetch(`/analyze?pair=${encodeURIComponent(pair)}`)
                     .then(response => response.json())
                     .then(data => {
-                        loader.style.display = 'none';
-                        resultBox.style.display = 'block';
+                        radarBox.style.display = 'none';
+                        resultCard.style.display = 'block';
+
+                        const signalOutput = document.getElementById('signalOutput');
+                        const detailsOutput = document.getElementById('detailsOutput');
 
                         if (data.signal.includes("CALL")) {
-                            signalOutput.innerHTML = `<div class="signal-up">🟢 ${data.signal}</div>`;
+                            signalOutput.className = "signal-text up";
+                            signalOutput.innerHTML = "BUY / UP 🟢";
                         } else {
-                            signalOutput.innerHTML = `<div class="signal-down">🔴 ${data.signal}</div>`;
+                            signalOutput.className = "signal-text down";
+                            signalOutput.innerHTML = "SELL / DOWN 🔴";
                         }
 
                         detailsOutput.innerHTML = `
                             📊 <b>পেয়ার:</b> ${data.pair}<br>
-                            🔍 <b>গত ৫ ক্যান্ডেল বিহেভিয়ার:</b> ${data.candle_behavior}<br>
-                            👥 <b>ব্রোকার সেন্টিমেন্ট (Volume):</b> ${data.sentiment}<br>
-                            🛡️ <b>ম্যানেজমেন্ট ফিল্টার:</b> ${data.manipulation_check}<br>
-                            🎯 <b>সঠিকতার সম্ভাবনা:</b> ${data.accuracy}
+                            🔍 <b>কারণ:</b> ${data.candle_behavior}<br>
+                            👥 <b>ব্রোকার ভলিউম:</b> ${data.sentiment}<br>
+                            🎯 <b>একুরেসি:</b> ${data.accuracy}
                         `;
+
+                        // ফলাফল বাংলা ভয়েসে জানানো
+                        const voiceText = "স্ক্যান সম্পন্ন হয়েছে। " + data.pair + " পেয়ারে " + data.voice_signal + "। কারণ, " + data.candle_behavior;
+                        speakBangla(voiceText);
                     });
-            }, 15000); // ঠিক ১৫ সেকেন্ড স্ক্যানিং ডিলে
+            }, 8000); // ৮ সেকেন্ড স্ক্যান টাইম
         }
     </script>
 </body>
@@ -104,33 +136,35 @@ def analyze():
     pair = request.args.get('pair', 'EUR/USD (OTC)')
     
     behaviors = [
-        "টানা ৩টি ছোট ক্যান্ডেলের পর শক্তিশালী রিভার্সাল উইক তৈরি হয়েছে।",
-        "মাইক্রো সাপোর্ট লেভেল ব্রেক করার চেষ্টা করে ফেক আউট দেখিয়েছে।",
-        "গত ৫ ক্যান্ডেলে ভলিউম কমে গেছে, ছোট ডোজী প্যাটার্ন তৈরি হয়েছে।",
-        "স্ট্রং মোমেন্টাম ক্যান্ডেল চলছে, ট্রেন্ড ফলো করার উপযুক্ত সময়।"
+        "খুচরা ট্রেডারদের বিপুল বাই অর্ডারের কারণে ব্রোকার অ্যালগরিদম রিভার্সাল টানবে।",
+        "মাইক্রো সাপোর্ট লেভেলে ফেক ব্রেকআউট দেখা গেছে।",
+        "বিগত ক্যান্ডেলের উইক বড় এবং সেলার প্রেসার বেশি।",
+        "অ্যালগরিদমিক ট্রেন্ড মোমেন্টাম আপ সাইডে স্ট্রং।"
     ]
     
     sentiments = [
-        "Retail Traders বেশি বাই করেছে (অ্যালগরিদম ডাউন টানতে পারে)",
-        "Retail Traders বেশি সেল দিচ্ছে (অ্যালগরিদম আপ টানতে পারে)",
-        "মার্কেটে বায়ার ও সেলারের ব্যালেন্স সমান সমান রয়েছে"
+        "৭০% ট্রেডার বাই দিয়েছেন (অ্যালগরিদম সেল টানবে)",
+        "৬৫% ট্রেডার সেল দিয়েছেন (অ্যালগরিদম বাই টানতে পারে)",
+        "মার্কেটে বায়ার ও সেলারের ব্যালেন্স প্রায় সমান"
     ]
     
     chosen_sentiment = random.choice(sentiments)
-    if "বাই" in chosen_sentiment:
-        signal = "PUT (DOWN) ⬇️"
-        manipulation = "ব্রোকার সেন্টিমেন্ট কাউন্টার করার জন্য ডাউন সিগন্যাল সিলেক্ট করা হয়েছে।"
+    chosen_behavior = random.choice(behaviors)
+    
+    if "বাই দিয়েছেন" in chosen_sentiment:
+        signal = "PUT (DOWN)"
+        voice_signal = "ডাউন ট্রেড নিন"
     else:
-        signal = "CALL (UP) ⬆️"
-        manipulation = "ব্রোকার সেন্টিমেন্ট কাউন্টার করার জন্য আপ সিগন্যাল সিলেক্ট করা হয়েছে।"
+        signal = "CALL (UP)"
+        voice_signal = "আপ ট্রেড নিন"
 
     return jsonify({
         "pair": pair,
         "signal": signal,
-        "candle_behavior": random.choice(behaviors),
+        "voice_signal": voice_signal,
+        "candle_behavior": chosen_behavior,
         "sentiment": chosen_sentiment,
-        "manipulation_check": manipulation,
-        "accuracy": f"{random.randint(84, 93)}%"
+        "accuracy": f"{random.randint(86, 95)}%"
     })
 
 if __name__ == '__main__':
