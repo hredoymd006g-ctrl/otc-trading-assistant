@@ -22,11 +22,16 @@ HTML_TEMPLATE = """
         body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
         .container { max-width: 450px; margin: auto; background: #111827; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
         h2 { text-align: center; color: #10b981; font-size: 24px; margin-bottom: 5px; font-weight: bold; }
-        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 20px; }
+        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 15px; }
+        
+        /* Voice Enabler Button for Mobile Apps */
+        .voice-enable-btn { width: 100%; padding: 10px; background: #374151; color: #f59e0b; border: 1px solid #f59e0b; border-radius: 8px; font-size: 14px; font-weight: bold; margin-bottom: 15px; cursor: pointer; text-align: center; }
+        .voice-enable-btn:active { background: #f59e0b; color: #111827; }
+
         label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 8px; }
         select { width: 100%; padding: 12px; background: #1f2937; color: #38bdf8; border: 1px solid #374151; border-radius: 8px; font-size: 16px; margin-bottom: 20px; outline: none; }
-        button { width: 100%; padding: 15px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.98); }
+        button.scan-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button.scan-btn:active { transform: scale(0.98); }
         
         /* Radar Scanner Animation */
         .radar-box { display: none; text-align: center; margin: 20px 0; }
@@ -47,6 +52,9 @@ HTML_TEMPLATE = """
         <h2>BD VIP SIGNAL BOT</h2>
         <div class="subtitle">ওটিসি অ্যালগরিদম ও বাংলা ভয়েস অ্যাসিস্ট্যান্ট</div>
         
+        <!-- Mobile Audio Unlock Button -->
+        <button class="voice-enable-btn" onclick="enableMobileVoice()">🔊 ভয়েস সাউন্ড অ্যাক্টিভ করুন (এখানে চাপুন)</button>
+
         <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
         <select id="pairSelect">
             {% for pair in pairs %}
@@ -54,7 +62,7 @@ HTML_TEMPLATE = """
             {% endfor %}
         </select>
         
-        <button onclick="startScanning()">লাইভ স্ক্যান করুন</button>
+        <button class="scan-btn" onclick="startScanning()">লাইভ স্ক্যান করুন</button>
         
         <div id="radarBox" class="radar-box">
             <div class="radar"></div>
@@ -69,13 +77,29 @@ HTML_TEMPLATE = """
     </div>
 
     <script>
-        // বাংলা ভয়েস বলার ফাংশন
+        let voiceReady = false;
+
+        // মোবাইল অ্যাপে ভয়েস আনলক করার স্পেশাল ফাংশন
+        function enableMobileVoice() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const msg = new SpeechSynthesisUtterance("ভয়েস সিস্টেম অ্যাক্টিভ হয়েছে");
+                msg.lang = 'bn-BD';
+                msg.rate = 1.0;
+                window.speechSynthesis.speak(msg);
+                voiceReady = true;
+                alert("✅ বাংলা ভয়েস রেডি হয়েছে!");
+            } else {
+                alert("আপনার ব্রাউজারে টেক্সট-টু-স্পিচ সাপোর্ট করছে না।");
+            }
+        }
+
         function speakBangla(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // আগের কথা বন্ধ করা
+                window.speechSynthesis.cancel();
                 const msg = new SpeechSynthesisUtterance(text);
-                msg.lang = 'bn-BD'; // বাংলা ভাষা
-                msg.rate = 0.9;     // কথা বলার গতি
+                msg.lang = 'bn-BD';
+                msg.rate = 0.9;
                 window.speechSynthesis.speak(msg);
             }
         }
