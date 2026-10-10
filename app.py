@@ -46,7 +46,7 @@ HTML_TEMPLATE = """
 <body>
     <div class="container">
         <h2>BD VIP SIGNAL BOT</h2>
-        <div class="subtitle">ওটিসি অ্যালগরিদম ও সুপার ফাস্ট সাউন্ড অ্যালার্ট</div>
+        <div class="subtitle">ওটিসি অ্যালগরিদম ও নিশ্চিত সাউন্ড অ্যালার্ট</div>
 
         <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
         <select id="pairSelect">
@@ -69,41 +69,32 @@ HTML_TEMPLATE = """
         </div>
     </div>
 
+    <!-- রিয়েল এমপি থ্রি নোটিফিকেশন সাউন্ড -->
+    <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
     <script>
-        // মোবাইল ফ্রেন্ডলি অডিও অ্যালার্ট (বীপ সাউন্ড জেনারেটর)
-        function playBeepSound() {
-            try {
-                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioCtx.createOscillator();
-                const gainNode = audioCtx.createGain();
-                
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(800, audioCtx.currentTime); // ফ্রিকোয়েন্সি
-                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.4); // ০.৪ সেকেন্ডের সাউন্ড
-            } catch(e) {
-                console.log("Audio not supported");
+        function playSound() {
+            const sound = document.getElementById('alertSound');
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(e => console.log("Audio play blocked", e));
             }
         }
 
         function startScanning() {
-            const pair = document.getElementById('pairSelect').value;
+            const pair = document.getElementById('pairSelect',);
+            const selectedPair = document.getElementById('pairSelect').value;
             const radarBox = document.getElementById('radarBox');
             const resultCard = document.getElementById('resultCard');
             
             radarBox.style.display = 'block';
             resultCard.style.display = 'none';
 
-            // স্ক্যান শুরু হওয়ার সময় ছোট বীপ সাউন্ড
-            playBeepSound();
+            // স্ক্যান শুরু হওয়ার সময় সাউন্ড
+            playSound();
 
             setTimeout(() => {
-                fetch(`/analyze?pair=${encodeURIComponent(pair)}`)
+                fetch(`/analyze?pair=${encodeURIComponent(selectedPair)}`)
                     .then(response => response.json())
                     .then(data => {
                         radarBox.style.display = 'none';
@@ -127,9 +118,9 @@ HTML_TEMPLATE = """
                             🎯 <b>একুরেসি:</b> ${data.accuracy}
                         `;
 
-                        // স্ক্যান শেষ হওয়ার পর সিগন্যাল অ্যালার্ট সাউন্ড (ডাবল বীপ)
-                        playBeepSound();
-                        setTimeout(playBeepSound, 200);
+                        // সিগন্যাল আসার পর ডাবল সাউন্ড অ্যালার্ট
+                        playSound();
+                        setTimeout(playSound, 300);
                     });
             }, 8000); // ৮ সেকেন্ড স্ক্যান টাইম
         }
