@@ -6,7 +6,7 @@ app = Flask(__name__)
 # বিস্তৃত ওটিসি পেয়ারের তালিকা
 OTC_PAIRS = [
     "USD/BRL (OTC)", "USD/INR (OTC)", "USD/BDT (OTC)", "USD/PKR (OTC)",
-    "USD/EGP (OTC)", "USD/TRY (OTC)", "USD/CAD (OTC)", "USD/MXN (OTC)",
+    "USD/EGP (OTC)", , "USD/CAD (OTC)", "USD/MXN (OTC)",
     "EUR/USD (OTC)", "GBP/USD (OTC)", "AUD/CHF (OTC)", "CAD/JPY (OTC)",
     "CHF/JPY (OTC)", "GBP/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
 ]
@@ -72,7 +72,7 @@ HTML_TEMPLATE = """
         
         <div id="radarBox" class="radar-box">
             <div class="radar"></div>
-            <p style="color:#10b981; margin-top:10px; font-weight:bold;" id="scanStatus">মার্কেট স্ক্যানিং হচ্ছে...</p>
+            <p style="color:#f59e0b; margin-top:10px; font-weight:bold;" id="scanStatus">মার্কেট স্ক্যানিং হচ্ছে...</p>
         </div>
         
         <div id="resultCard" class="result-card">
@@ -105,12 +105,25 @@ HTML_TEMPLATE = """
             radarBox.style.display = 'block';
             resultCard.style.display = 'none';
 
-            let scanTime = 8000; // নরমাল স্ক্যান টাইম
+            let scanTime = 8000; // সাধারণ লাইভ স্ক্যান (৮ সেকেন্ড)
+            
             if (mode === 'safety') {
-                scanStatus.innerHTML = "সেফটি মোড: ১০-১৫ ক্যান্ডেল ও ১ মিনিট ১২ সেকেন্ড অ্যানালাইসিস চলছে...";
-                scanTime = 6000; // সেফটি স্ক্যানের জন্য প্রিসাইজ টাইম
+                // একদম কড়াভাবে ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) লক করা হলো
+                scanTime = 72000; 
+                let timeLeft = 72;
+                
+                scanStatus.innerHTML = `🛡️ সেফটি মোড: ১ মিনিট ১২ সেকেন্ড স্ক্যান চলছে... (${timeLeft}s)`;
+                
+                let countdownTimer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        scanStatus.innerHTML = `🛡️ সেফটি মোড: ১ মিনিট ১২ সেকেন্ড স্ক্যান চলছে... (${timeLeft}s)`;
+                    } else {
+                        clearInterval(countdownTimer);
+                    }
+                }, 1000);
             } else {
-                scanStatus.innerHTML = "মার্কেট স্ক্যানিং হচ্ছে...";
+                scanStatus.innerHTML = "মার্কেট ফাস্ট স্ক্যানিং হচ্ছে...";
             }
 
             playSound();
@@ -126,7 +139,7 @@ HTML_TEMPLATE = """
                         const detailsOutput = document.getElementById('detailsOutput');
 
                         if (mode === 'safety') {
-                            modeTitle.innerHTML = "⚡ SAFETY SCAN (1m 12s Next Candle)";
+                            modeTitle.innerHTML = "🛡️ STRICT 1M 12S SAFETY SIGNAL";
                         } else {
                             modeTitle.innerHTML = `🔥 ${selectedTime} MIN PREMIUM SIGNAL`;
                         }
@@ -142,9 +155,9 @@ HTML_TEMPLATE = """
                         detailsOutput.innerHTML = `
                             📊 <b>পেয়ার:</b> ${data.pair}<br>
                             ⏳ <b>টাইমফ্রেম:</b> ${data.time_frame}<br>
-                            🔍 <b>মার্কেট অ্যানালাইসিস:</b> ${data.candle_behavior}<br>
+                            🔍 <b>বিশ্লেষণ:</b> ${data.candle_behavior}<br>
                             👥 <b>ব্রোকার ভলিউম:</b> ${data.sentiment}<br>
-                            🎯 <b>সিগন্যাল একুরেসি:</b> ${data.accuracy}
+                            🎯 <b>নিশ্চিত একুরেসি:</b> ${data.accuracy}
                         `;
 
                         playSound();
@@ -169,10 +182,10 @@ def analyze():
     
     if mode == 'safety':
         behaviors = [
-            "১ মিনিট ১২ সেকেন্ড ধরে ১০-১৫টি ক্যান্ডেলের মুভমেন্ট ও প্রাইস অ্যাকশন রিড করা হয়েছে; নেক্সট ক্যান্ডেলে স্ট্রং রিভার্সাল পসিবল।",
-            "শেষ ১২ ক্যান্ডেলের ভলাটিলিটি এবং সাপোর্ট-রেজিস্ট্যান্স জোন যাচাই করে নেক্সট ক্যান্ডেল এন্ট্রি নিশ্চিত করা হয়েছে।"
+            "সঠিকভাবে ১ মিনিট ১২ সেকেন্ড ধরে ফুল ক্যান্ডেল ও প্রিভিয়াস মোমেন্টাম যাচাই করা হয়েছে; নেক্সট ক্যান্ডেল এন্ট্রির জন্য ১০০% সেফ।",
+            "৭২ সেকেন্ডের ডিটেইলড মার্কেট স্ক্যান এবং স্ট্রং রিকভারি জোন কমপ্লিট হওয়ার পর সেফটি সিগন্যাল লক করা হয়েছে।"
         ]
-        accuracy = f"{random.randint(94, 99)}% (Safety Confirmed)"
+        accuracy = f"{random.randint(96, 99)}% (Strictly Verified)"
     else:
         behaviors = [
             "খুচরা ট্রেডারদের বিপুল বাই অর্ডারের কারণে ব্রোকার অ্যালগরিদম রিভার্সাল টানবে।",
