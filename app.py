@@ -3,7 +3,6 @@ import random
 
 app = Flask(__name__)
 
-# বিস্তৃত ওটিসি পেয়ারের তালিকা
 OTC_PAIRS = [
     "USD/BRL (OTC)", "USD/INR (OTC)", "USD/BDT (OTC)", "USD/PKR (OTC)",
     "USD/EGP (OTC)", "USD/TRY (OTC)", "USD/CAD (OTC)", "USD/MXN (OTC)",
@@ -19,37 +18,188 @@ HTML_TEMPLATE = """
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BD VIP Signal Bot</title>
     <style>
-        body { background-color: #0b0f19; color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; }
-        .container { max-width: 450px; margin: auto; background: #111827; padding: 20px; border-radius: 16px; border: 1px solid #1e293b; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
-        h2 { text-align: center; color: #10b981; font-size: 24px; margin-bottom: 5px; font-weight: bold; }
-        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 15px; }
+        :root {
+            --bg-deep: #050811;
+            --panel-bg: rgba(17, 24, 39, 0.85);
+            --neon-green: #10b981;
+            --neon-blue: #38bdf8;
+            --neon-orange: #f59e0b;
+            --neon-red: #ef4444;
+            --border-glow: 0 0 15px rgba(56, 189, 248, 0.3);
+        }
         
-        label { font-size: 14px; color: #94a3b8; display: block; margin-bottom: 6px; }
-        select { width: 100%; padding: 10px; background: #1f2937; color: #38bdf8; border: 1px solid #374151; border-radius: 8px; font-size: 15px; margin-bottom: 12px; outline: none; }
+        body { 
+            background: radial-gradient(circle at center, #0f172a 0%, #030712 100%); 
+            color: #f8fafc; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 10px; 
+            min-height: 100vh;
+        }
+
+        .container { 
+            max-width: 460px; 
+            margin: auto; 
+            background: var(--panel-bg); 
+            backdrop-filter: blur(12px);
+            padding: 22px; 
+            border-radius: 20px; 
+            border: 1px solid rgba(56, 189, 248, 0.4); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.9), inset 0 0 20px rgba(16, 185, 129, 0.15); 
+        }
+
+        .header-box {
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .bot-badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--neon-green);
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--neon-green);
+            margin-bottom: 6px;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+
+        h2 { 
+            color: #ffffff; 
+            font-size: 24px; 
+            margin: 0; 
+            font-weight: 900; 
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+        }
+
+        .subtitle { 
+            color: #94a3b8; 
+            font-size: 12px; 
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+        
+        label { 
+            font-size: 13px; 
+            color: var(--neon-blue); 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+        }
+
+        select { 
+            width: 100%; 
+            padding: 12px; 
+            background: #0b0f19; 
+            color: #ffffff; 
+            border: 1px solid rgba(56, 189, 248, 0.3); 
+            border-radius: 12px; 
+            font-size: 15px; 
+            margin-bottom: 15px; 
+            outline: none; 
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+        select:focus {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
         
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        button.scan-btn { flex: 1; padding: 14px 10px; background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button.safety-btn { flex: 1; padding: 14px 10px; background: linear-gradient(135deg, #d97706, #f59e0b); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.98); }
         
-        /* Radar Scanner Animation */
-        .radar-box { display: none; text-align: center; margin: 20px 0; }
-        .radar { width: 80px; height: 80px; border: 3px solid #10b981; border-radius: 50%; margin: auto; position: relative; animation: pulse 1.5s infinite; }
-        .radar::after { content: ''; position: absolute; width: 40px; height: 40px; background: rgba(16, 185, 129, 0.3); top: 0; left: 0; border-radius: 100% 0 0 0; animation: spin 1s linear infinite; transform-origin: 100% 100%; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        button.scan-btn { 
+            flex: 1; 
+            padding: 14px 10px; 
+            background: linear-gradient(135deg, #059669, #10b981); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 15px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            transition: 0.3s; 
+        }
+        
+        button.safety-btn { 
+            flex: 1; 
+            padding: 14px 10px; 
+            background: linear-gradient(135deg, #d97706, #f59e0b); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 15px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            transition: 0.3s; 
+        }
 
-        .result-card { display: none; background: #1f2937; padding: 20px; border-radius: 12px; border: 2px solid #10b981; text-align: center; margin-top: 20px; }
-        .signal-text { font-size: 32px; font-weight: 900; margin: 10px 0; }
-        .up { color: #10b981; }
-        .down { color: #ef4444; }
-        .details { text-align: left; font-size: 13px; color: #9ca3af; line-height: 1.6; margin-top: 15px; background: #111827; padding: 10px; border-radius: 8px; }
+        button:active { transform: scale(0.97); }
+        
+        /* 3D Holo Scanner Animation */
+        .radar-box { display: none; text-align: center; margin: 25px 0; }
+        .holo-ring { 
+            width: 90px; 
+            height: 90px; 
+            border: 3px dashed var(--neon-green); 
+            border-radius: 50%; 
+            margin: auto; 
+            position: relative; 
+            animation: spin 2s linear infinite, glowPulse 1.5s ease-in-out infinite alternate; 
+        }
+        .holo-core {
+            position: absolute;
+            top: 15px; left: 15px; right: 15px; bottom: 15px;
+            background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(5,8,17,0) 70%);
+            border-radius: 50%;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(16,185,129,0.2); } 100% { box-shadow: 0 0 25px rgba(16,185,129,0.8); } }
+
+        .result-card { 
+            display: none; 
+            background: linear-gradient(145deg, #0f172a, #1e293b); 
+            padding: 20px; 
+            border-radius: 16px; 
+            border: 2px solid var(--neon-green); 
+            text-align: center; 
+            margin-top: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(16, 185, 129, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .signal-text { font-size: 30px; font-weight: 900; margin: 10px 0; letter-spacing: 1px; }
+        .up { color: var(--neon-green); text-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+        .down { color: var(--neon-red); text-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+        
+        .details { 
+            text-align: left; 
+            font-size: 13px; 
+            color: #cbd5e1; 
+            line-height: 1.6; 
+            margin-top: 15px; 
+            background: rgba(11, 15, 25, 0.8); 
+            padding: 12px; 
+            border-radius: 10px; 
+            border: 1px solid rgba(255,255,255,0.05);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>BD VIP SIGNAL BOT</h2>
-        <div class="subtitle">ওটিসি অ্যালগরিদম ও নিশ্চিত সাউন্ড অ্যালার্ট</div>
+        <div class="header-box">
+            <div class="bot-badge">🟢 3D CYBERPUNK ACTIVE</div>
+            <h2>BD VIP SIGNAL BOT</h2>
+            <div class="subtitle">স্মার্ট ট্রেডিং • হাই একুরেসি • অটো সিগন্যাল</div>
+        </div>
 
         <label for="pairSelect">মার্কেট সিলেক্ট করুন (All OTC):</label>
         <select id="pairSelect">
@@ -66,17 +216,17 @@ HTML_TEMPLATE = """
         </select>
         
         <div class="btn-group">
-            <button class="scan-btn" onclick="startScanning('normal')">লাইভ স্ক্যান</button>
-            <button class="safety-btn" onclick="startScanning('safety')">সেফটি স্ক্যান</button>
+            <button class="scan-btn" onclick="startScanning('normal')">⚡ লাইভ স্ক্যান</button>
+            <button class="safety-btn" onclick="startScanning('safety')">🛡️ সেফটি স্ক্যান</button>
         </div>
         
         <div id="radarBox" class="radar-box">
-            <div class="radar"></div>
-            <p style="color:#f59e0b; margin-top:10px; font-weight:bold;" id="scanStatus">মার্কেট স্ক্যানিং হচ্ছে...</p>
+            <div class="holo-ring"><div class="holo-core"></div></div>
+            <p style="color:var(--neon-blue); margin-top:12px; font-weight:bold; font-size:14px;" id="scanStatus">মার্কেট স্ক্যানিং হচ্ছে...</p>
         </div>
         
         <div id="resultCard" class="result-card">
-            <div style="font-size:12px; color:#9ca3af;" id="modeTitle">PREMIUM SIGNAL</div>
+            <div style="font-size:12px; color:var(--neon-blue); font-weight:bold; letter-spacing: 1px;" id="modeTitle">PREMIUM SIGNAL</div>
             <div id="signalOutput" class="signal-text"></div>
             <div class="details" id="detailsOutput"></div>
         </div>
@@ -108,8 +258,7 @@ HTML_TEMPLATE = """
             let scanTime = 8000; // সাধারণ লাইভ স্ক্যান (৮ সেকেন্ড)
             
             if (mode === 'safety') {
-                // একদম কড়াভাবে ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) লক করা হলো
-                scanTime = 72000; 
+                scanTime = 72000; // নিখুঁত ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) লক
                 let timeLeft = 72;
                 
                 scanStatus.innerHTML = `🛡️ সেফটি মোড: ১ মিনিট ১২ সেকেন্ড স্ক্যান চলছে... (${timeLeft}s)`;
@@ -139,9 +288,9 @@ HTML_TEMPLATE = """
                         const detailsOutput = document.getElementById('detailsOutput');
 
                         if (mode === 'safety') {
-                            modeTitle.innerHTML = "🛡️ STRICT 1M 12S SAFETY SIGNAL";
+                            modeTitle.innerHTML = "🛡️ 3D STRICT 1M 12S SAFETY SIGNAL";
                         } else {
-                            modeTitle.innerHTML = `🔥 ${selectedTime} MIN PREMIUM SIGNAL`;
+                            modeTitle.innerHTML = `🔥 3D ${selectedTime} MIN PREMIUM SIGNAL`;
                         }
 
                         if (data.signal.includes("CALL")) {
@@ -197,7 +346,7 @@ def analyze():
 
     sentiments = [
         "৭০% ট্রেডার বাই দিয়েছেন (অ্যালগরিদম সেল টানবে)",
-        "৬৫% ট্রেডার সেল দিয়েছেন (অ্যালগরিদম বাই টানতে পারে)",
+        "৬৫% ট্রেডার সেল দিয়েছেন (অ্যালগরিdm বাই টানতে পারে)",
         "মার্কেটে বায়ার ও সেলারের ব্যালেন্স প্রায় সমান"
     ]
     
