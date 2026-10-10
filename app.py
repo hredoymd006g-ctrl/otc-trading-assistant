@@ -16,7 +16,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP Signal Bot - 3D Cyberpunk</title>
+    <title>BD VIP Signal Bot</title>
     <style>
         :root {
             --bg-deep: #050811;
@@ -101,7 +101,6 @@ HTML_TEMPLATE = """
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
         }
 
-        /* Holographic Center Display */
         .holo-display {
             background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(11,15,25,0.9) 80%);
             border: 2px solid var(--neon-green);
@@ -139,7 +138,7 @@ HTML_TEMPLATE = """
         }
 
         .signal-call-put {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 900;
             margin: 5px 0;
         }
@@ -178,7 +177,6 @@ HTML_TEMPLATE = """
             color: #f8fafc;
         }
 
-        /* Action Buttons */
         .btn-grid { display: flex; gap: 10px; margin-top: 15px; }
         
         button.cyber-btn-green { 
@@ -225,16 +223,14 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Top HUD Header -->
         <div class="top-hud">
             <div>
                 <h2 class="bot-title">BD VIP SIGNAL BOT</h2>
-                <div style="font-size: 10px; color: var(--neon-blue);">SMART TRADING • 3D HUD</div>
+                <div style="font-size: 10px; color: var(--neon-blue);">SMART TRADING • VIP HUD</div>
             </div>
             <div class="status-pill">🟢 ACTIVE</div>
         </div>
 
-        <!-- Asset & Timeframe Select -->
         <label class="section-label">Asset Select & Timeframe</label>
         <select id="pairSelect">
             {% for pair in pairs %}
@@ -248,15 +244,13 @@ HTML_TEMPLATE = """
             <option value="3">3 Minutes Timeframe (3m)</option>
         </select>
         
-        <!-- Action Buttons -->
         <div class="btn-grid">
-            <button class="cyber-btn-green" onclick="startScanning('normal')">⚡ HIGHER / LIVE</button>
+            <button class="cyber-btn-green" onclick="startScanning('normal')">⚡ LIVE SCAN</button>
             <button class="cyber-btn-orange" onclick="startScanning('safety')">🛡️ SAFETY SCAN</button>
         </div>
         
-        <!-- Central Holographic Display -->
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="modeTitle">HOLO SIGNAL MATRIX</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="modeTitle">SIGNAL MATRIX</div>
             
             <div style="position: relative; height: 80px; margin: 10px 0;">
                 <div class="holo-circle"></div>
@@ -266,7 +260,6 @@ HTML_TEMPLATE = """
                 </div>
             </div>
 
-            <!-- Stats HUD -->
             <div class="stats-grid">
                 <div class="stat-box">
                     <div style="font-size: 10px; color: var(--neon-green);">ACCURACY</div>
@@ -284,7 +277,6 @@ HTML_TEMPLATE = """
         </div>
     </div>
 
-    <!-- অডিও অ্যালার্ট -->
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
@@ -306,15 +298,15 @@ HTML_TEMPLATE = """
             const statAccuracy = document.getElementById('statAccuracy');
 
             signalOutput.className = "signal-call-put";
-            signalOutput.innerHTML = "SCANNING...";
+            signalOutput.innerHTML = "SCAN...";
             countdownTimer.innerHTML = "⏳ 00:72";
 
-            let scanTime = 8000; // সাধারণ স্ক্যান টাইম
+            let scanTime = 8000;
             
             if (mode === 'safety') {
-                scanTime = 72000; // ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) নিখুঁত সেফটি স্ক্যান লক
+                scanTime = 72000; // নিখুঁত ১ মিনিট ১২ সেকেন্ড (৭২ সেকেন্ড) সেফটি স্ক্যান লক
                 let timeLeft = 72;
-                modeTitle.innerHTML = "🛡️ 3D CYBER SAFETY SCAN (1m 12s)";
+                modeTitle.innerHTML = "🛡️ SAFETY SCAN (1m 12s)";
                 
                 let timerInterval = setInterval(() => {
                     timeLeft--;
@@ -325,7 +317,7 @@ HTML_TEMPLATE = """
                     }
                 }, 1000);
             } else {
-                modeTitle.innerHTML = "⚡ 3D LIVE HIGH-SPEED SCAN";
+                modeTitle.innerHTML = "⚡ LIVE HIGH-SPEED SCAN";
                 countdownTimer.innerHTML = "⏳ 00:58";
             }
 
@@ -335,12 +327,12 @@ HTML_TEMPLATE = """
                 fetch(`/analyze?pair=${encodeURIComponent(selectedPair)}&time=${selectedTime}&mode=${mode}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.signal.includes("CALL")) {
+                        if (data.signal_type === "UP") {
                             signalOutput.className = "signal-call-put up-glow";
-                            signalOutput.innerHTML = "CALL 🟢";
+                            signalOutput.innerHTML = "UP ⬆️";
                         } else {
                             signalOutput.className = "signal-call-put down-glow";
-                            signalOutput.innerHTML = "PUT 🔴";
+                            signalOutput.innerHTML = "DOWN ⬇️";
                         }
 
                         statAccuracy.innerHTML = data.accuracy;
@@ -395,14 +387,14 @@ def analyze():
     chosen_behavior = random.choice(behaviors)
     
     if "বাই দিয়েছেন" in chosen_sentiment:
-        signal = "PUT (DOWN)"
+        signal_type = "DOWN"
     else:
-        signal = "CALL (UP)"
+        signal_type = "UP"
 
     return jsonify({
         "pair": pair,
         "time_frame": time_frame,
-        "signal": signal,
+        "signal_type": signal_type,
         "candle_behavior": chosen_behavior,
         "sentiment": chosen_sentiment,
         "accuracy": accuracy
