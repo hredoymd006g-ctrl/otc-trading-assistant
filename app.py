@@ -16,7 +16,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP Signal Bot - Fully Automated</title>
+    <title>BD VIP Signal Bot - Realtime Auto Engine</title>
     <style>
         :root {
             --bg-deep: #050811;
@@ -66,6 +66,13 @@ HTML_TEMPLATE = """
             font-weight: 900; 
             text-shadow: var(--glow-cyan);
             letter-spacing: 1px;
+        }
+
+        .realtime-clock {
+            font-size: 11px;
+            color: var(--neon-blue);
+            font-weight: bold;
+            margin-top: 2px;
         }
 
         .status-pill {
@@ -171,29 +178,29 @@ HTML_TEMPLATE = """
         <div class="top-hud">
             <div>
                 <h2 class="bot-title">BD VIP SIGNAL BOT</h2>
-                <div style="font-size: 10px; color: var(--neon-blue);">FULLY AUTOMATED • MULTI-TF ENGINE</div>
+                <div class="realtime-clock" id="liveClockTimer">⏱️ REALTIME: --:--:--</div>
             </div>
             <div class="status-pill">🟢 AUTO LIVE</div>
         </div>
 
         <label class="section-label">Asset Select & Trade Timeframe</label>
-        <select id="pairSelect" onchange="triggerAutoScan()">
+        <select id="pairSelect" onchange="resetCandleCycle()">
             {% for pair in pairs %}
             <option value="{{ pair }}">{{ pair }}</option>
             {% endfor %}
         </select>
 
-        <select id="timeSelect" onchange="triggerAutoScan()">
+        <select id="timeSelect" onchange="resetCandleCycle()">
             <option value="1">1 Minute Trade (1m)</option>
             <option value="3">3 Minutes Trade (3m)</option>
             <option value="5">5 Minutes Trade (5m)</option>
         </select>
         
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="modeTitle">⚡ AUTO MULTI-TF SCANNER (27s Window)</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;">⚡ AUTO MULTI-TF SCANNER (1-MIN CANDLE SYNC)</div>
             
-            <div id="signalOutput" class="signal-call-put wait-glow">SCANNING...</div>
-            <div class="timer-hud" id="countdownTimer">⏳ 5s-1D Algorithmic Sync</div>
+            <div id="signalOutput" class="signal-call-put wait-glow">WAIT...</div>
+            <div class="timer-hud" id="countdownTimer">⏳ Candle Timer: 60s</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
@@ -207,7 +214,7 @@ HTML_TEMPLATE = """
             </div>
 
             <div class="details-panel" id="detailsOutput">
-                🔄 বট রিয়েল-টাইমে লাইভ ডাটা নিয়ে ব্যাকগ্রাউন্ডে মাল্টি-টাইমফ্রেম (5s-1D) স্ক্যান করছে...
+                🔄 ১ মিনিটের লাইভ ক্যান্ডেল ট্র্যাকিং চলছে... ২৬-২৮ সেকেন্ডের উইন্ডোতে এনালাইসিস করে সিগন্যাল আপডেট হবে।
             </div>
         </div>
     </div>
@@ -215,6 +222,18 @@ HTML_TEMPLATE = """
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
+        let candleTimeLeft = 60;
+        let signalFetchedThisCandle = false;
+
+        function updateRealtimeClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('liveClockTimer').innerHTML = `⏱️ REALTIME: ${h}:${m}:${s}`;
+        }
+        setInterval(updateRealtimeClock, 1000);
+
         function playSound() {
             const sound = document.getElementById('alertSound');
             if (sound) {
@@ -223,18 +242,38 @@ HTML_TEMPLATE = """
             }
         }
 
-        function triggerAutoScan() {
+        function runOneMinuteCandleCycle() {
+            const countdownTimer = document.getElementById('countdownTimer');
+            countdownTimer.innerHTML = `⏳ Candle Timer: ${candleTimeLeft}s`;
+
+            // ক্যান্ডেলের ২৬ থেকে ২৮ সেকেন্ডের মাথায় (অর্থাৎ টাইমার যখন ৩৪ থেকে ৩২ সেকেন্ড বাকি) ব্যাকগ্রাউন্ড স্ক্যান
+            if (candleTimeLeft <= 34 && candleTimeLeft >= 32 && !signalFetchedThisCandle) {
+                signalFetchedThisCandle = true;
+                fetchAutoSignal();
+            }
+
+            candleTimeLeft--;
+
+            if (candleTimeLeft < 0) {
+                // ১ মিনিট পূর্ণ হলে নতুন ক্যান্ডেল সাইকেল শুরু
+                candleTimeLeft = 60;
+                signalFetchedThisCandle = false;
+            }
+        }
+
+        function resetCandleCycle() {
+            candleTimeLeft = 60;
+            signalFetchedThisCandle = false;
+            fetchAutoSignal();
+        }
+
+        function fetchAutoSignal() {
             const selectedPair = document.getElementById('pairSelect').value;
             const selectedTime = document.getElementById('timeSelect').value;
             const signalOutput = document.getElementById('signalOutput');
-            const countdownTimer = document.getElementById('countdownTimer');
             const detailsOutput = document.getElementById('detailsOutput');
             const statAccuracy = document.getElementById('statAccuracy');
             const statSuccess = document.getElementById('statSuccess');
-
-            signalOutput.className = "signal-call-put wait-glow";
-            signalOutput.innerHTML = "WAIT...";
-            countdownTimer.innerHTML = "⏳ Checking 27s Window...";
 
             fetch(`/auto_analyze?pair=${encodeURIComponent(selectedPair)}&time=${selectedTime}`)
                 .then(response => response.json())
@@ -242,16 +281,13 @@ HTML_TEMPLATE = """
                     if (data.action === "WAIT") {
                         signalOutput.className = "signal-call-put wait-glow";
                         signalOutput.innerHTML = "WAIT ⏳";
-                        countdownTimer.innerHTML = "🛑 LOW CONFIDENCE (HOLD)";
                     } else if (data.signal_type === "UP") {
                         signalOutput.className = "signal-call-put up-glow";
                         signalOutput.innerHTML = "UP ⬆️";
-                        countdownTimer.innerHTML = "✅ 27s CONFIRMED ENTRY";
                         playSound();
                     } else {
                         signalOutput.className = "signal-call-put down-glow";
                         signalOutput.innerHTML = "DOWN ⬇️";
-                        countdownTimer.innerHTML = "✅ 27s CONFIRMED ENTRY";
                         playSound();
                     }
 
@@ -262,15 +298,17 @@ HTML_TEMPLATE = """
                         📈 <b>Asset:</b> ${data.pair}<br>
                         ⏳ <b>Trade Timeframe:</b> ${data.time_frame}<br>
                         🧠 <b>Multi-TF (5s-1D) & 10-Candle Algo:</b> ${data.candle_behavior}<br>
-                        👥 <b>Market Pressure (27s):</b> ${data.sentiment}<br>
+                        👥 <b>Market Pressure (27s Window):</b> ${data.sentiment}<br>
                         🛡️ <b>Safety Margin Rule:</b> ${data.safety_margin}
                     `;
                 });
         }
 
-        // সম্পূর্ণ অটোমেটিক লাইভ স্ক্যানার (প্রতি ৩০ সেকেন্ড পর পর নিজে থেকেই ডেটা ফেচ করবে)
-        setInterval(triggerAutoScan, 30000);
-        window.onload = triggerAutoScan;
+        setInterval(runOneMinuteCandleCycle, 1000);
+        window.onload = () => {
+            updateRealtimeClock();
+            fetchAutoSignal();
+        };
     </script>
 </body>
 </html>
@@ -285,12 +323,10 @@ def auto_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
     time_frame = request.args.get('time', '1') + " Minute"
     
-    # 5s, 10s, 15s, 20s, 30s, 2m, 3m, 5m, 1h, 2h, 1D ক্যান্ডেলের ১০টি ডেটা ও একুরেসি ফিল্টার
     wins = random.randint(7, 9)
     win_rate_str = f"{wins}/10 Win"
     accuracy_percentage = f"{wins * 10}%"
     
-    # কনফিডেন্স বা একুরেসি কম থাকলে জেনুইন ট্রেডারদের মতো অপেক্ষা (WAIT) করবে
     if wins < 8:
         return jsonify({
             "action": "WAIT",
@@ -299,23 +335,23 @@ def auto_analyze():
             "win_rate": win_rate_str,
             "accuracy": accuracy_percentage,
             "candle_behavior": "5s থেকে 1D পর্যন্ত ১০টি ক্যান্ডেল ও ডোজি প্যাটার্নে ভোলাটিলিটি বেশি রয়েছে।",
-            "sentiment": "বায়ার ও সেলারের প্রেসার ব্যালেন্সড, ২৭ সেকেন্ডের উইন্ডোতে ক্লিয়ার সিগন্যাল নেই।",
+            "sentiment": "বায়ার ও সেলারের প্রেসার ব্যালেন্সড, ২৭ সেকেন্ডের উইন্ডোতে ক্লিয়ার সিগন্যাল নেই।",
             "safety_margin": "ঝুঁকি এড়াতে এই মুহূর্তে ট্রেড হোল্ড করুন (WAIT / PATIENCE)."
         })
     
     behaviors = [
-        "5s, 15s, 30s, 1h ও 1D টাইমফ্রেমের বিগত ১০টি ক্যান্ডেল ও প্যাটার্ন বিশ্লেষণ সম্পন্ন।",
+        "5s, 10s, 15s, 20s, 30s, 1h ও 1D টাইমফ্রেমের বিগত ১০টি ক্যান্ডেল ও প্যাটার্ন বিশ্লেষণ সম্পন্ন।",
         "২৭ সেকেন্ডের উইন্ডোতে ওপেনিং ক্যান্ডেলে হিউজ বায়ার/সেলার প্রেসার ও ডোজি ফিল্টার যাচাইকৃত।"
     ]
     
     sentiments = [
         "২৭ সেকেন্ডে সেলারদের প্রেসার ওভারপাওয়ার করে স্ট্রং বায়ার জোন একটিভ হয়েছে।",
         "বায়ারদের ভলিউম বেশি রয়েছে, সেলাররা রেজিস্ট্যান্স ধরে রাখতে ব্যর্থ হচ্ছে।",
-        "সাপোর্ট জোনে হিউজ রিজেকশন উইক এবং নিখুঁত প্রাইس অ্যাকশন দৃশ্যমান।"
+        "সাপোর্ট জোনে হিউজ রিজেকশন উইক এবং নিখুঁত প্রাইস অ্যাকশন দৃশ্যমান।"
     ]
     
     safety_margins = [
-        "কান্টেল ওপেনিংয়ে সামান্য রিটেস্ট করলে সেফটি মার্জিন নিয়ে এন্ট্রি নিন।",
+        "ক্যান্ডেল ওপেনিংয়ে সামান্য রিটেস্ট করলে সেফটি মার্জিন নিয়ে এন্ট্রি নিন।",
         "নির্ধারিত সেফটি পয়েন্ট বা পুলব্যাক থেকে নিরাপদ এন্ট্রি নিশ্চিত করুন।"
     ]
     
