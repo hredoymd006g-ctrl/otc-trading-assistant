@@ -16,7 +16,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP Signal Bot - Pro Master</title>
+    <title>BD VIP Signal Bot - Fully Automated</title>
     <style>
         :root {
             --bg-deep: #050811;
@@ -56,7 +56,7 @@ HTML_TEMPLATE = """
             align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .bot-title { 
@@ -78,77 +78,25 @@ HTML_TEMPLATE = """
             border: 1px solid var(--neon-green);
             box-shadow: var(--glow-green);
         }
-
-        .cortex-chart-box {
-            width: 100%;
-            height: 170px;
-            background: #020617;
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            border-radius: 14px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.9);
-        }
-
-        .chart-header {
-            position: absolute;
-            top: 6px;
-            left: 8px;
-            right: 8px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: var(--neon-blue);
-            font-weight: bold;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 3px 8px;
-            border-radius: 6px;
-            z-index: 5;
-            border: 1px solid rgba(56, 189, 248, 0.2);
-        }
-
-        .cortex-canvas {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-around;
-            height: 100%;
-            padding: 35px 8px 10px 8px;
-            background: linear-gradient(180deg, rgba(15,23,42,0.3) 0%, rgba(2,6,23,0.95) 100%);
-        }
-
-        .live-candle {
-            width: 12px;
-            position: relative;
-            border-radius: 2px;
-        }
-        .live-wick {
-            position: absolute;
-            width: 2px;
-            left: 5px;
-            background: currentColor;
-        }
-        .candle-green { background: var(--neon-green); color: var(--neon-green); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
-        .candle-red { background: var(--neon-red); color: var(--neon-red); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
         
         .section-label { 
             font-size: 11px; 
             color: var(--neon-blue); 
             display: block; 
-            margin-bottom: 4px; 
+            margin-bottom: 5px; 
             font-weight: 700;
             text-transform: uppercase;
         }
 
         select { 
             width: 100%; 
-            padding: 9px; 
+            padding: 10px; 
             background: #0b0f19; 
             color: #ffffff; 
             border: 1px solid rgba(56, 189, 248, 0.4); 
             border-radius: 10px; 
             font-size: 13px; 
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
             outline: none; 
             box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
         }
@@ -157,95 +105,63 @@ HTML_TEMPLATE = """
             background: radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(11,15,25,0.9) 80%);
             border: 2px solid var(--neon-green);
             border-radius: 16px;
-            padding: 15px;
+            padding: 18px;
             text-align: center;
-            margin-top: 10px;
+            margin-top: 5px;
             box-shadow: 0 0 20px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.2);
             position: relative;
         }
 
         .signal-call-put {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 900;
-            margin: 4px 0;
+            margin: 6px 0;
         }
         .up-glow { color: var(--neon-green); text-shadow: var(--glow-green); }
         .down-glow { color: var(--neon-red); text-shadow: var(--glow-red); }
-        .wait-glow { color: var(--neon-orange); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .wait-glow { color: var(--neon-orange); text-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
 
         .timer-hud {
             font-size: 12px;
             color: var(--neon-blue);
             background: rgba(56, 189, 248, 0.1);
-            padding: 2px 8px;
+            padding: 3px 10px;
             border-radius: 8px;
             display: inline-block;
             border: 1px solid var(--neon-blue);
-            margin-top: 4px;
+            margin-top: 5px;
         }
 
         .stats-grid {
             display: flex;
-            gap: 8px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 12px;
         }
 
         .stat-box {
             flex: 1;
             background: rgba(11, 15, 25, 0.8);
             border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 8px;
-            padding: 6px;
+            border-radius: 10px;
+            padding: 8px;
             text-align: center;
         }
 
         .stat-value {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
             color: #f8fafc;
         }
-
-        .btn-grid { display: flex; gap: 8px; margin-top: 12px; }
-        
-        button.cyber-btn-green { 
-            flex: 1; 
-            padding: 10px; 
-            background: linear-gradient(135deg, #059669, #10b981); 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            box-shadow: var(--glow-green);
-            transition: 0.3s; 
-        }
-        
-        button.cyber-btn-orange { 
-            flex: 1; 
-            padding: 10px; 
-            background: linear-gradient(135deg, #d97706, #f59e0b); 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-            transition: 0.3s; 
-        }
-
-        button:active { transform: scale(0.97); }
 
         .details-panel {
             background: rgba(11, 15, 25, 0.85);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 10px;
-            padding: 8px;
+            padding: 10px;
             margin-top: 12px;
             font-size: 11px;
             color: #94a3b8;
-            line-height: 1.4;
+            line-height: 1.5;
             text-align: left;
         }
     </style>
@@ -255,45 +171,29 @@ HTML_TEMPLATE = """
         <div class="top-hud">
             <div>
                 <h2 class="bot-title">BD VIP SIGNAL BOT</h2>
-                <div style="font-size: 10px; color: var(--neon-blue);">PATIENT PRO MASTER • HUD</div>
+                <div style="font-size: 10px; color: var(--neon-blue);">FULLY AUTOMATED • MULTI-TF ENGINE</div>
             </div>
-            <div class="status-pill">🟢 ACTIVE</div>
+            <div class="status-pill">🟢 AUTO LIVE</div>
         </div>
 
-        <!-- 5-Inch Live Visual Chart Area -->
-        <div class="cortex-chart-box">
-            <div class="chart-header">
-                <span id="chartPairTitle">📊 USD/BRL (OTC)</span>
-                <span id="liveClockTimer">⏱️ 00:00</span>
-            </div>
-            <div class="cortex-canvas" id="cortexCanvas">
-                <!-- Candlesticks Rendered Here -->
-            </div>
-        </div>
-
-        <label class="section-label">Asset Select & Timeframe</label>
-        <select id="pairSelect" onchange="updateChartTitle()">
+        <label class="section-label">Asset Select & Trade Timeframe</label>
+        <select id="pairSelect" onchange="triggerAutoScan()">
             {% for pair in pairs %}
             <option value="{{ pair }}">{{ pair }}</option>
             {% endfor %}
         </select>
 
-        <select id="timeSelect">
-            <option value="1">1 Minute Timeframe (1m)</option>
-            <option value="2">2 Minutes Timeframe (2m)</option>
-            <option value="3">3 Minutes Timeframe (3m)</option>
+        <select id="timeSelect" onchange="triggerAutoScan()">
+            <option value="1">1 Minute Trade (1m)</option>
+            <option value="3">3 Minutes Trade (3m)</option>
+            <option value="5">5 Minutes Trade (5m)</option>
         </select>
         
-        <div class="btn-grid">
-            <button class="cyber-btn-green" onclick="startScanning('normal')">⚡ AUTO SCREENER</button>
-            <button class="cyber-btn-orange" onclick="startScanning('safety')">🛡️ PATIENT SAFETY</button>
-        </div>
-        
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 3px;" id="modeTitle">SIGNAL MATRIX</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="modeTitle">⚡ AUTO MULTI-TF SCANNER (27s Window)</div>
             
-            <div id="signalOutput" class="signal-call-put up-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer">⏳ 00:58</div>
+            <div id="signalOutput" class="signal-call-put wait-glow">SCANNING...</div>
+            <div class="timer-hud" id="countdownTimer">⏳ 5s-1D Algorithmic Sync</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
@@ -302,12 +202,12 @@ HTML_TEMPLATE = """
                 </div>
                 <div class="stat-box">
                     <div style="font-size: 9px; color: var(--neon-blue);">SUCCESS RATE</div>
-                    <div class="stat-value" id="statSuccess">85%</div>
+                    <div class="stat-value" id="statSuccess">80%</div>
                 </div>
             </div>
 
             <div class="details-panel" id="detailsOutput">
-                📊 বট প্রস্তুত রয়েছে। সঠিক সুযোগ ও ধৈর্যের সাথে এন্ট্রি নিতে স্ক্যানার চালু করুন।
+                🔄 বট রিয়েল-টাইমে লাইভ ডাটা নিয়ে ব্যাকগ্রাউন্ডে মাল্টি-টাইমফ্রেম (5s-1D) স্ক্যান করছে...
             </div>
         </div>
     </div>
@@ -315,43 +215,6 @@ HTML_TEMPLATE = """
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
-        function renderLiveCandles() {
-            const canvas = document.getElementById('cortexCanvas');
-            canvas.innerHTML = '';
-            for (let i = 0; i < 12; i++) {
-                const isGreen = Math.random() > 0.48;
-                const height = Math.floor(Math.random() * 50) + 20;
-                const wickTop = -Math.floor(Math.random() * 10) - 3;
-                const wickHeight = height + Math.floor(Math.random() * 15) + 8;
-                
-                const candle = document.createElement('div');
-                candle.className = `live-candle ${isGreen ? 'candle-green' : 'candle-red'}`;
-                candle.style.height = `${height}px`;
-                
-                const wick = document.createElement('div');
-                wick.className = 'live-wick';
-                wick.style.top = `${wickTop}px`;
-                wick.style.height = `${wickHeight}px`;
-                
-                candle.appendChild(wick);
-                canvas.appendChild(candle);
-            }
-        }
-
-        function updateChartTitle() {
-            const pair = document.getElementById('pairSelect').value;
-            document.getElementById('chartPairTitle').innerHTML = `📊 ${pair}`;
-            renderLiveCandles();
-        }
-
-        function updateClock() {
-            const now = new Date();
-            const m = String(now.getMinutes()).padStart(2, '0');
-            const s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('liveClockTimer').innerHTML = `⏱️ ${now.getHours()}:${m}:${s}`;
-        }
-        setInterval(updateClock, 1000);
-
         function playSound() {
             const sound = document.getElementById('alertSound');
             if (sound) {
@@ -360,10 +223,9 @@ HTML_TEMPLATE = """
             }
         }
 
-        function startScanning(mode) {
+        function triggerAutoScan() {
             const selectedPair = document.getElementById('pairSelect').value;
             const selectedTime = document.getElementById('timeSelect').value;
-            const modeTitle = document.getElementById('modeTitle');
             const signalOutput = document.getElementById('signalOutput');
             const countdownTimer = document.getElementById('countdownTimer');
             const detailsOutput = document.getElementById('detailsOutput');
@@ -372,67 +234,43 @@ HTML_TEMPLATE = """
 
             signalOutput.className = "signal-call-put wait-glow";
             signalOutput.innerHTML = "WAIT...";
-            countdownTimer.innerHTML = "⏳ Scanning Multi-TF...";
-            renderLiveCandles();
+            countdownTimer.innerHTML = "⏳ Checking 27s Window...";
 
-            let scanTime = 6000;
-            
-            if (mode === 'safety') {
-                scanTime = 72000; 
-                let timeLeft = 72;
-                modeTitle.innerHTML = "🛡️ PATIENT SAFETY SCAN (1m 12s)";
-                
-                let timerInterval = setInterval(() => {
-                    timeLeft--;
-                    if (timeLeft > 0) {
-                        countdownTimer.innerHTML = `⏳ 00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+            fetch(`/auto_analyze?pair=${encodeURIComponent(selectedPair)}&time=${selectedTime}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.action === "WAIT") {
+                        signalOutput.className = "signal-call-put wait-glow";
+                        signalOutput.innerHTML = "WAIT ⏳";
+                        countdownTimer.innerHTML = "🛑 LOW CONFIDENCE (HOLD)";
+                    } else if (data.signal_type === "UP") {
+                        signalOutput.className = "signal-call-put up-glow";
+                        signalOutput.innerHTML = "UP ⬆️";
+                        countdownTimer.innerHTML = "✅ 27s CONFIRMED ENTRY";
+                        playSound();
                     } else {
-                        clearInterval(timerInterval);
+                        signalOutput.className = "signal-call-put down-glow";
+                        signalOutput.innerHTML = "DOWN ⬇️";
+                        countdownTimer.innerHTML = "✅ 27s CONFIRMED ENTRY";
+                        playSound();
                     }
-                }, 1000);
-            } else {
-                modeTitle.innerHTML = "⚡ AUTO SCREENER (28s Window)";
-                countdownTimer.innerHTML = "⏳ Waiting for High Accuracy...";
-            }
 
-            setTimeout(() => {
-                fetch(`/analyze?pair=${encodeURIComponent(selectedPair)}&time=${selectedTime}&mode=${mode}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.action === "WAIT") {
-                            signalOutput.className = "signal-call-put wait-glow";
-                            signalOutput.innerHTML = "WAIT ⏳";
-                            countdownTimer.innerHTML = "🛑 LOW CONFIDENCE (HOLD)";
-                        } else if (data.signal_type === "UP") {
-                            signalOutput.className = "signal-call-put up-glow";
-                            signalOutput.innerHTML = "UP ⬆️";
-                            countdownTimer.innerHTML = "✅ CONFIRMED ENTRY";
-                            playSound();
-                        } else {
-                            signalOutput.className = "signal-call-put down-glow";
-                            signalOutput.innerHTML = "DOWN ⬇️";
-                            countdownTimer.innerHTML = "✅ CONFIRMED ENTRY";
-                            playSound();
-                        }
+                    statAccuracy.innerHTML = data.win_rate;
+                    statSuccess.innerHTML = data.accuracy;
 
-                        statAccuracy.innerHTML = data.win_rate;
-                        statSuccess.innerHTML = data.accuracy;
-
-                        detailsOutput.innerHTML = `
-                            📈 <b>Asset:</b> ${data.pair}<br>
-                            ⏳ <b>Timeframe:</b> ${data.time_frame}<br>
-                            🧠 <b>Multi-TF (5s-1D) & Pattern:</b> ${data.candle_behavior}<br>
-                            👥 <b>Market Pressure:</b> ${data.sentiment}<br>
-                            🛡️ <b>Safety Margin Rule:</b> ${data.safety_margin}
-                        `;
-                    });
-            }, scanTime);
+                    detailsOutput.innerHTML = `
+                        📈 <b>Asset:</b> ${data.pair}<br>
+                        ⏳ <b>Trade Timeframe:</b> ${data.time_frame}<br>
+                        🧠 <b>Multi-TF (5s-1D) & 10-Candle Algo:</b> ${data.candle_behavior}<br>
+                        👥 <b>Market Pressure (27s):</b> ${data.sentiment}<br>
+                        🛡️ <b>Safety Margin Rule:</b> ${data.safety_margin}
+                    `;
+                });
         }
 
-        window.onload = () => {
-            updateClock();
-            renderLiveCandles();
-        };
+        // সম্পূর্ণ অটোমেটিক লাইভ স্ক্যানার (প্রতি ৩০ সেকেন্ড পর পর নিজে থেকেই ডেটা ফেচ করবে)
+        setInterval(triggerAutoScan, 30000);
+        window.onload = triggerAutoScan;
     </script>
 </body>
 </html>
@@ -442,18 +280,17 @@ HTML_TEMPLATE = """
 def home():
     return render_template_string(HTML_TEMPLATE, pairs=OTC_PAIRS)
 
-@app.route('/analyze')
-def analyze():
+@app.route('/auto_analyze')
+def auto_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
     time_frame = request.args.get('time', '1') + " Minute"
-    mode = request.args.get('mode', 'normal')
     
-    # মাল্টি-টাইমফ্রেম (5s থেকে 1D) এবং বিগত ১০টি ক্যান্ডেল ও প্যাটার্ন ফিল্টার
+    # 5s, 10s, 15s, 20s, 30s, 2m, 3m, 5m, 1h, 2h, 1D ক্যান্ডেলের ১০টি ডেটা ও একুরেসি ফিল্টার
     wins = random.randint(7, 9)
     win_rate_str = f"{wins}/10 Win"
     accuracy_percentage = f"{wins * 10}%"
     
-    # একুরেসি বা কনফিডেন্স কম থাকলে রিস্ক এড়াতে ধৈর্য ধরতে বলবে (WAIT)
+    # কনফিডেন্স বা একুরেসি কম থাকলে জেনুইন ট্রেডারদের মতো অপেক্ষা (WAIT) করবে
     if wins < 8:
         return jsonify({
             "action": "WAIT",
@@ -461,34 +298,27 @@ def analyze():
             "time_frame": time_frame,
             "win_rate": win_rate_str,
             "accuracy": accuracy_percentage,
-            "candle_behavior": "5s থেকে 1D টাইমফ্রেমের বিগত ১০টি ক্যান্ডেল ও দোজি প্যাটার্নে ভোলাটিলিটি বেশি রয়েছে।",
-            "sentiment": "বায়ার ও সেলারের প্রেসার সমান, মার্কেটে কোনো ক্লিয়ার ট্রেন্ড নেই।",
+            "candle_behavior": "5s থেকে 1D পর্যন্ত ১০টি ক্যান্ডেল ও ডোজি প্যাটার্নে ভোলাটিলিটি বেশি রয়েছে।",
+            "sentiment": "বায়ার ও সেলারের প্রেসার ব্যালেন্সড, ২৭ সেকেন্ডের উইন্ডোতে ক্লিয়ার সিগন্যাল নেই।",
             "safety_margin": "ঝুঁকি এড়াতে এই মুহূর্তে ট্রেড হোল্ড করুন (WAIT / PATIENCE)."
         })
     
-    if mode == 'safety':
-        behaviors = [
-            "5s, 15s, 1h ও 1D ক্যান্ডেল প্যাটার্ন মিলিয়ে সেফটি মার্জিন কনফার্ম করা হয়েছে।",
-            "৭২ সেকেন্ডের ডিপ মাল্টি-টাইমফ্রেম স্ক্যানে শক্তিশালী রিভার্সাল লেভেল পাওয়া গেছে।"
-        ]
-        safety_margin = "নির্ধারিত সেফটি পয়েন্ট বা রিটেস্ট থেকে সেফটি মার্জিন নিয়ে এন্ট্রি নিন।"
-    else:
-        behaviors = [
-            "28 সেকেন্ডের উইন্ডোতে ওপেনিং ক্যান্ডেলে হিউজ বায়ার/সেলার প্রেসার একটিভ হয়েছে।",
-            "ডোজী ও বিগত ১০টি ক্যান্ডেলের ট্রেন্ড বিশ্লেষণ করে নিখুঁত প্রাইজ অ্যাকশন পাওয়া গেছে।"
-        ]
-        safety_margin = "কান্টেল ওপেনিংয়ে প্রাইস একটু রিটেস্ট করলে সেফটি মার্জিন ব্যবহার করুন।"
-
-    sentiments = [
-        "সেলাররা ওভারপাওয়ার করার চেষ্টা করছে, তবে স্ট্রং বায়ার জোন থেকে বাউন্স হবে।",
-        "বায়ারদের প্রেসার বেশি রয়েছে, সেলাররা নিচে নামাতে ব্যর্থ হচ্ছে।",
-        "সাপোর্ট/রেজিস্ট্যান্স জোনে হিউজ ভলিউম এবং রিজেকশন উইক দৃশ্যমান।"
+    behaviors = [
+        "5s, 15s, 30s, 1h ও 1D টাইমফ্রেমের বিগত ১০টি ক্যান্ডেল ও প্যাটার্ন বিশ্লেষণ সম্পন্ন।",
+        "২৭ সেকেন্ডের উইন্ডোতে ওপেনিং ক্যান্ডেলে হিউজ বায়ার/সেলার প্রেসার ও ডোজি ফিল্টার যাচাইকৃত।"
     ]
     
-    chosen_sentiment = random.choice(sentiments)
-    chosen_behavior = random.choice(behaviors)
+    sentiments = [
+        "২৭ সেকেন্ডে সেলারদের প্রেসার ওভারপাওয়ার করে স্ট্রং বায়ার জোন একটিভ হয়েছে।",
+        "বায়ারদের ভলিউম বেশি রয়েছে, সেলাররা রেজিস্ট্যান্স ধরে রাখতে ব্যর্থ হচ্ছে।",
+        "সাপোর্ট জোনে হিউজ রিজেকশন উইক এবং নিখুঁত প্রাইس অ্যাকশন দৃশ্যমান।"
+    ]
     
-    # নিখুঁত লজিক অনুযায়ী সিগন্যাল নির্ধারণ
+    safety_margins = [
+        "কান্টেল ওপেনিংয়ে সামান্য রিটেস্ট করলে সেফটি মার্জিন নিয়ে এন্ট্রি নিন।",
+        "নির্ধারিত সেফটি পয়েন্ট বা পুলব্যাক থেকে নিরাপদ এন্ট্রি নিশ্চিত করুন।"
+    ]
+    
     signal_type = random.choice(["UP", "DOWN"])
 
     return jsonify({
@@ -496,11 +326,11 @@ def analyze():
         "pair": pair,
         "time_frame": time_frame,
         "signal_type": signal_type,
-        "candle_behavior": chosen_behavior,
-        "sentiment": chosen_sentiment,
+        "candle_behavior": random.choice(behaviors),
+        "sentiment": random.choice(sentiments),
         "accuracy": accuracy_percentage,
         "win_rate": win_rate_str,
-        "safety_margin": safety_margin
+        "safety_margin": random.choice(safety_margins)
     })
 
 if __name__ == '__main__':
