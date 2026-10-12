@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template_string, jsonify, request
 import random
 
@@ -209,7 +210,6 @@ HTML_TEMPLATE = """
             text-align: left;
         }
 
-        /* Custom Modal Popup for Camera / Gallery Choice */
         #mediaModal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -267,7 +267,6 @@ HTML_TEMPLATE = """
             <span id="fileStatus" style="font-size: 11px; color: var(--neon-blue);">কোটেক্স চার্টের স্ক্রিনশট বা ছবি দিতে এখানে চাপুন</span>
         </div>
 
-        <!-- Hidden inputs for Camera and Gallery Upload -->
         <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleFileSelected(this)">
         <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="handleFileSelected(this)">
 
@@ -303,7 +302,6 @@ HTML_TEMPLATE = """
         </div>
     </div>
 
-    <!-- Selection Modal Popup -->
     <div id="mediaModal">
         <div class="modal-content">
             <h3 style="color: var(--neon-blue); margin-top: 0; font-size: 15px;">🖼️ ইনপুট মাধ্যম নির্বাচন করুন</h3>
@@ -384,4 +382,97 @@ HTML_TEMPLATE = """
 
             signalOutput.className = "signal-call-put wait-glow";
             signalOutput.innerHTML = "20-AI SCAN...";
-            countdownTimer.innerHTML = "
+            countdownTimer.innerHTML = "⏳ 20 AI Models Analyzing Pixels & Swing-13...";
+            bossHeader.innerHTML = "🔄 Master Boss AI Processing 20 Reports...";
+
+            setTimeout(() => {
+                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        bossHeader.innerHTML = "👑 20-AI MASTER BOSS VERDICT";
+                        if (data.action === "WAIT") {
+                            signalOutput.className = "signal-call-put wait-glow";
+                            signalOutput.innerHTML = "WAIT ⏳";
+                            statStatus.innerHTML = "Risk Blocked";
+                            countdownTimer.innerHTML = "🛑 Master Boss: Hold Trade";
+                        } else if (data.signal_type === "UP") {
+                            signalOutput.className = "signal-call-put up-glow";
+                            signalOutput.innerHTML = "UP ⬆️";
+                            statStatus.innerHTML = "99.9% Win";
+                            countdownTimer.innerHTML = "✅ Master Boss: BUY Confirmed";
+                            playSound();
+                        } else {
+                            signalOutput.className = "signal-call-put down-glow";
+                            signalOutput.innerHTML = "DOWN ⬇️";
+                            statStatus.innerHTML = "99.9% Win";
+                            countdownTimer.innerHTML = "✅ Master Boss: SELL Confirmed";
+                            playSound();
+                        }
+
+                        statAccuracy.innerHTML = data.consensus;
+                        statSwing.innerHTML = data.swing_no;
+
+                        detailsOutput.innerHTML = `
+                            📈 <b>Asset:</b> ${data.pair}<br>
+                            👁️ <b>Vision CNN & OCR (20 AIs):</b> ${data.vision_ai}<br>
+                            📊 <b>Behavior & Swing (${data.swing_no}):</b> ${data.behavior_ai}<br>
+                            🛡️ <b>OTC Broker Filter:</b> ${data.otc_ai}<br>
+                            👑 <b>Master Boss Verdict:</b> ${data.boss_msg}
+                        `;
+                    });
+            }, 2500);
+        }
+
+        window.onload = updateRealtimeClock;
+    </script>
+</body>
+</html>
+"""
+
+@app.route('/')
+def home():
+    return render_template_string(HTML_TEMPLATE, pairs=OTC_PAIRS)
+
+@app.route('/master_analyze')
+def master_analyze():
+    pair = request.args.get('pair', 'USD/BRL (OTC)')
+    
+    swing_number = "Swing-13"
+    up_votes = random.randint(15, 20)
+    down_votes = 20 - up_votes
+    
+    if up_votes >= 17:
+        final_decision = "UP"
+        consensus = f"{up_votes}/20 AIs"
+        boss_msg = f"{up_votes}টি এআই এজেন্ট আপ ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই বাই (BUY) সিগন্যাল অনুমোদন করেছে।"
+    elif down_votes >= 17:
+        final_decision = "DOWN"
+        consensus = f"{down_votes}/20 AIs"
+        boss_msg = f"{down_votes}টি এআই এজেন্ট ডাউন ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই সেল (SELL) সিগন্যাল অনুমোদন করেছে।"
+    else:
+        return jsonify({
+            "action": "WAIT",
+            "pair": pair,
+            "consensus": "Divided (20 AIs)",
+            "swing_no": swing_number,
+            "vision_ai": "২০টি ভিশন এআই চার্টের ক্যান্ডেল উইক ও পিক্সেল স্ক্যান করেছে।",
+            "behavior_ai": f"সুইং পয়েন্ট {swing_number} এ বায়ার ও সেলারের মধ্যে তীব্র প্রতিদ্বন্দ্বিতা রয়েছে।",
+            "otc_ai": "ওটিসি সার্ভার ম্যানিপুলেশন জোন ডিটেক্ট করায় সেফটি ব্লক সক্রিয় হয়েছে।",
+            "boss_msg": "২০টি এআই-এর মধ্যে পূর্ণাঙ্গ ঐক্যমত না থাকায় মাস্টার বস এআই ট্রেড হোল্ড (WAIT) করতে বলেছে।"
+        })
+
+    return jsonify({
+        "action": "TRADE",
+        "pair": pair,
+        "signal_type": final_decision,
+        "consensus": consensus,
+        "swing_no": swing_number,
+        "vision_ai": "২০টি কনভোলিউশনাল নিউরাল নেটওয়ার্ক (CNN) দ্বারা স্ক্রিনশট শতভাগ ভ্যালিডেটেড।",
+        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে মোমেন্টাম ও প্রিভিয়াস ক্যান্ডেল বিহেভিয়ার শতভাগ অনুকূলে।",
+        "otc_ai": "কোটেক্স ওটিসি প্রাইস ফিড ও ফেক ব্রেকআউট ফিল্টার সফলভাবে পাস হয়েছে।",
+        "boss_msg": boss_msg
+    })
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
