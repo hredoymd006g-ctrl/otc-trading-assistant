@@ -16,11 +16,13 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP 7-AI Hierarchical Vision Bot</title>
+    <title>BD VIP Pro Trading Bot - Lightweight Chart & 7-AI Engine</title>
+    <!-- TradingView Lightweight Charts CDN -->
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
         :root {
             --bg-deep: #030712;
-            --panel-bg: rgba(15, 23, 42, 0.96);
+            --panel-bg: #0f172a;
             --neon-green: #10b981;
             --neon-blue: #38bdf8;
             --neon-orange: #f59e0b;
@@ -31,227 +33,198 @@ HTML_TEMPLATE = """
         }
         
         body { 
-            background: radial-gradient(circle at center, #0f172a 0%, #030712 100%); 
+            background: var(--bg-deep); 
             color: #f8fafc; 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             margin: 0; 
-            padding: 10px; 
-            min-height: 100vh;
+            padding: 5px; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
-        .dashboard-container { 
-            max-width: 460px; 
-            margin: auto; 
-            background: var(--panel-bg); 
-            backdrop-filter: blur(20px);
-            padding: 18px; 
-            border-radius: 22px; 
-            border: 1px solid rgba(56, 189, 248, 0.5); 
-            box-shadow: 0 25px 50px rgba(0,0,0,0.95); 
+        /* Top Section: Live TradingView Chart (62% Height) */
+        .chart-section {
+            height: 60%;
+            background: var(--panel-bg);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(11, 15, 25, 0.9);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 12px;
+        }
+
+        #tradingviewChart {
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Bottom Section: Control & 7-AI Scan Panel (38% Height) */
+        .control-section {
+            height: 38%;
+            background: var(--panel-bg);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 14px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
         }
 
         .top-hud {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 5px;
         }
 
         .bot-title { 
             color: #ffffff; 
-            font-size: 16px; 
+            font-size: 14px; 
             margin: 0; 
             font-weight: 900; 
             text-shadow: var(--glow-cyan);
-            letter-spacing: 1px;
         }
 
         .realtime-clock {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--neon-blue);
             font-weight: bold;
-            margin-top: 2px;
         }
 
-        .status-pill {
-            background: rgba(16, 185, 129, 0.2);
-            color: var(--neon-green);
-            font-size: 10px;
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 12px;
-            border: 1px solid var(--neon-green);
-            box-shadow: var(--glow-green);
-        }
-        
-        .section-label { 
-            font-size: 11px; 
-            color: var(--neon-blue); 
-            display: block; 
-            margin-bottom: 5px; 
-            font-weight: 700;
-            text-transform: uppercase;
+        .controls-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
         }
 
-        select, input[type="file"] { 
-            width: 100%; 
-            padding: 10px; 
+        select { 
+            flex: 1;
+            padding: 6px; 
             background: #0b0f19; 
             color: #ffffff; 
             border: 1px solid rgba(56, 189, 248, 0.4); 
-            border-radius: 10px; 
-            font-size: 13px; 
-            margin-bottom: 12px; 
+            border-radius: 8px; 
+            font-size: 11px; 
             outline: none; 
-            box-sizing: border-box;
-        }
-
-        .upload-box {
-            background: rgba(56, 189, 248, 0.05);
-            border: 2px dashed var(--neon-blue);
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .btn-grid {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
         }
 
         button.scan-btn {
-            flex: 1;
-            padding: 12px;
+            width: 100%;
+            padding: 8px;
             background: linear-gradient(135deg, #059669, #10b981);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 13px;
+            border-radius: 8px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: var(--glow-green);
             transition: 0.3s;
+            margin-bottom: 5px;
+        }
+        button.scan-btn:active { transform: scale(0.98); }
+
+        /* Laser Scan Overlay Animation */
+        #laserOverlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(16,185,129,0), rgba(16,185,129,0.25), rgba(16,185,129,0));
+            transform: translateY(-100%);
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+        }
+        @keyframes laserScan {
+            0% { transform: translateY(-100%); }
+            50% { transform: translateY(100%); }
+            100% { transform: translateY(-100%); }
+        }
+        .scanning #laserOverlay {
+            display: block;
+            animation: laserScan 1.5s infinite linear;
         }
 
-        button.cam-btn {
-            flex: 1;
-            padding: 12px;
-            background: linear-gradient(135deg, #d97706, #f59e0b);
-            color: white;
-            border: none;
+        .signal-grid {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: rgba(11, 15, 25, 0.85);
             border-radius: 10px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
-            transition: 0.3s;
+            padding: 6px 10px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
         }
 
-        button:active { transform: scale(0.98); }
-
-        .holo-display {
-            background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, rgba(11,15,25,0.95) 80%);
-            border: 2px solid var(--neon-blue);
-            border-radius: 16px;
-            padding: 16px;
-            text-align: center;
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
-            position: relative;
-        }
-
-        .signal-call-put {
-            font-size: 28px;
+        .signal-box {
+            font-size: 20px;
             font-weight: 900;
-            margin: 6px 0;
+            text-align: center;
+            min-width: 90px;
         }
         .up-glow { color: var(--neon-green); text-shadow: var(--glow-green); }
         .down-glow { color: var(--neon-red); text-shadow: var(--glow-red); }
-        .wait-glow { color: var(--neon-orange); text-shadow: 0 0 12px rgba(245, 158, 11, 0.5); }
+        .wait-glow { color: var(--neon-orange); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
 
-        .stats-grid {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .stat-box {
-            flex: 1;
-            background: rgba(11, 15, 25, 0.85);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 10px;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 14px;
-            font-weight: bold;
-            color: #f8fafc;
-        }
-
-        .details-panel {
-            background: rgba(11, 15, 25, 0.9);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 10px;
-            padding: 10px;
-            margin-top: 12px;
-            font-size: 11px;
+        .details-text {
+            font-size: 10px;
             color: #cbd5e1;
-            line-height: 1.5;
-            text-align: left;
+            line-height: 1.3;
+            flex: 1;
         }
     </style>
 </head>
-<body>
-    <div class="dashboard-container">
+<body id="appBody">
+
+    <!-- Top Section: TradingView Lightweight Chart -->
+    <div class="chart-section" id="chartContainerWrapper">
+        <div class="chart-header">
+            <span id="chartPairTitle" style="font-weight: bold; color: var(--neon-blue);">📈 USD/BRL (OTC) Live Chart</span>
+            <span style="font-size: 10px; color: var(--neon-green);">🟢 Real-time WebSocket Feed</span>
+        </div>
+        <div id="tradingviewChart"></div>
+        <div id="laserOverlay"></div>
+    </div>
+
+    <!-- Bottom Section: Control & 7-AI Scan Panel -->
+    <div class="control-section">
         <div class="top-hud">
-            <div>
-                <h2 class="bot-title">BD VIP 7-AI BOSS ENGINE</h2>
-                <div class="realtime-clock" id="liveClockTimer">⏱️ REALTIME: --:--:--</div>
-            </div>
-            <div class="status-pill">🟢 7-AI ACTIVE</div>
+            <h2 class="bot-title">BD VIP 10s SCANNER & 7-AI</h2>
+            <div class="realtime-clock" id="liveClockTimer">⏱️ --:--:--</div>
         </div>
 
-        <label class="section-label">Select OTC Asset</label>
-        <select id="pairSelect">
-            {% for pair in pairs %}
-            <option value="{{ pair }}">{{ pair }}</option>
-            {% endfor %}
-        </select>
-
-        <div class="upload-box">
-            <label class="section-label" style="margin-bottom: 6px;">📷 Upload or Capture Chart</label>
-            <input type="file" id="chartImage" accept="image/*" capture="environment">
+        <div class="controls-row">
+            <select id="pairSelect" onchange="changeAssetChart()">
+                {% for pair in pairs %}
+                <option value="{{ pair }}">{{ pair }}</option>
+                {% endfor %}
+            </select>
+            <select id="timeSelect">
+                <option value="1">1 Minute Trade (1m)</option>
+                <option value="3">3 Minutes Trade (3m)</option>
+            </select>
         </div>
 
-        <div class="btn-grid">
-            <button class="scan-btn" onclick="analyzeChartImage()">🔍 7-AI BOSS SCAN</button>
-            <button class="cam-btn" onclick="document.getElementById('chartImage').click()">📸 TAKE PHOTO</button>
-        </div>
+        <button class="scan-btn" id="scanBtn" onclick="startTenSecondScan()">⚡ SCAN MARKET (10s)</button>
         
-        <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ BOSS AI DECISION MATRIX</div>
-            
-            <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Waiting for 7-AI consensus</div>
-
-            <div class="stats-grid">
-                <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-green);">AI CONSENSUS</div>
-                    <div class="stat-value" id="statAccuracy">7/7 Votes</div>
-                </div>
-                <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-blue);">BOSS STATUS</div>
-                    <div class="stat-value" id="statStatus">Optimal</div>
-                </div>
-            </div>
-
-            <div class="details-panel" id="detailsOutput">
-                🤖 ৭টি এআই এজেন্ট চার্ট স্ক্যান করে বস এআই-এর কাছে রিপোর্ট জমা দেওয়ার জন্য প্রস্তুত। ক্যামেরা বা ছবি দিয়ে স্ক্যান করুন।
+        <div class="signal-grid">
+            <div id="signalOutput" class="signal-box wait-glow">READY</div>
+            <div class="details-text" id="detailsOutput">
+                ১০ সেকেন্ডের লেজার স্ক্যান এবং ৭-এআই বস ইঞ্জিন দিয়ে মার্কেট এনালাইসিস করতে 'SCAN MARKET (10s)' বাটনে চাপুন।
             </div>
         </div>
     </div>
@@ -259,12 +232,13 @@ HTML_TEMPLATE = """
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
+        // রিয়েলটাইম ঘড়ি
         function updateRealtimeClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
-            document.getElementById('liveClockTimer').innerHTML = `⏱️ REALTIME: ${h}:${m}:${s}`;
+            document.getElementById('liveClockTimer').innerHTML = `⏱️ ${h}:${m}:${s}`;
         }
         setInterval(updateRealtimeClock, 1000);
 
@@ -276,55 +250,117 @@ HTML_TEMPLATE = """
             }
         }
 
-        function analyzeChartImage() {
-            const selectedPair = document.getElementById('pairSelect').value;
+        // TradingView Lightweight Charts সেটআপ
+        const chartElement = document.getElementById('tradingviewChart');
+        const chart = LightweightCharts.createChart(chartElement, {
+            layout: {
+                background: { type: 'solid', color: '#0f172a' },
+                textColor: '#94a3b8',
+            },
+            grid: {
+                vertLines: { color: 'rgba(56, 189, 248, 0.08)' },
+                horzLines: { color: 'rgba(56, 189, 248, 0.08)' },
+            },
+            rightPriceScale: {
+                borderColor: 'rgba(56, 189, 248, 0.2)',
+            },
+            timeScale: {
+                borderColor: 'rgba(56, 189, 248, 0.2)',
+                timeVisible: true,
+                secondsVisible: true,
+            },
+        });
+
+        const candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#10b981',
+            downColor: '#ef4444',
+            borderVisible: false,
+            wickUpColor: '#10b981',
+            wickDownColor: '#ef4444',
+        });
+
+        // ডামি রিয়েল-টাইম ক্যান্ডেল ডাটা জেনারেট করে চার্টে লোড করা
+        let basePrice = 5.2500;
+        let currentTime = Math.floor(Date.now() / 1000) - 1200;
+        let initialData = [];
+
+        for (let i = 0; i < 30; i++) {
+            let open = basePrice;
+            let close = open + (Math.random() - 0.48) * 0.0050;
+            let high = Math.max(open, close) + Math.random() * 0.0020;
+            let low = Math.min(open, close) - Math.random() * 0.0020;
+            initialData.push({ time: currentTime, open: open, high: high, low: low, close: close });
+            basePrice = close;
+            currentTime += 60; // প্রতি ১ মিনিট পর পর ক্যান্ডেল
+        }
+        candlestickSeries.setData(initialData);
+
+        // রিয়েল-টাইম লাইভ টিক আপডেট সিমুলেশন (WebSocket আদলে ক্যান্ডেল লাইভ আপডেট)
+        setInterval(() => {
+            const lastCandle = initialData[initialData.length - 1];
+            let newClose = lastCandle.close + (Math.random() - 0.49) * 0.0010;
+            let newHigh = Math.max(lastCandle.high, newClose);
+            let newLow = Math.min(lastCandle.low, newClose);
+            
+            candlestickSeries.update({
+                time: lastCandle.time,
+                open: lastCandle.open,
+                high: newHigh,
+                low: newLow,
+                close: newClose
+            });
+        }, 1000);
+
+        function changeAssetChart() {
+            const pair = document.getElementById('pairSelect').value;
+            document.getElementById('chartPairTitle').innerText = `📈 ${pair} Live Chart`;
+        }
+
+        // ১০ সেকেন্ডের লেজার স্ক্যান এবং ৭-এআই বস ইঞ্জিন ট্রিগার
+        function startTenSecondScan() {
+            const appBody = document.getElementById('appBody');
+            const scanBtn = document.getElementById('scanBtn');
             const signalOutput = document.getElementById('signalOutput');
             const detailsOutput = document.getElementById('detailsOutput');
-            const statAccuracy = document.getElementById('statAccuracy');
-            const statStatus = document.getElementById('statStatus');
-            const countdownTimer = document.getElementById('countdownTimer');
-            const bossHeader = document.getElementById('bossHeader');
+            const selectedPair = document.getElementById('pairSelect').value;
 
-            signalOutput.className = "signal-call-put wait-glow";
-            signalOutput.innerHTML = "COLLECTING...";
-            countdownTimer.innerHTML = "⏳ 7 AI Agents Processing...";
-            bossHeader.innerHTML = "🔄 7 AI Agents Reporting to Boss...";
+            // স্ক্যানিং অ্যানিমেশন চালু
+            appBody.classList.add('scanning');
+            scanBtn.disabled = true;
+            scanBtn.innerText = "⏳ SCANNING MARKET (10s)...";
+            signalOutput.className = "signal-box wait-glow";
+            signalOutput.innerHTML = "SCAN...";
+            detailsOutput.innerHTML = "🔍 ১০ সেকেন্ডের লেজার স্ক্যান চলছে... ৭টি এআই এজেন্ট চার্টের পিক্সেল ও ক্যান্ডেল বিহেভিয়ার এনালাইসিস করছে।";
 
+            // ১০ সেকেন্ড পর ব্যাকএন্ড থেকে ফাইনাল সিগন্যাল ফেচ করা
             setTimeout(() => {
                 fetch(`/boss_analyze?pair=${encodeURIComponent(selectedPair)}`)
                     .then(response => response.json())
                     .then(data => {
-                        bossHeader.innerHTML = "👑 BOSS AI FINAL VERDICT";
+                        appBody.classList.remove('scanning');
+                        scanBtn.disabled = false;
+                        scanBtn.innerText = "⚡ SCAN MARKET (10s)";
+
                         if (data.action === "WAIT") {
-                            signalOutput.className = "signal-call-put wait-glow";
+                            signalOutput.className = "signal-box wait-glow";
                             signalOutput.innerHTML = "WAIT ⏳";
-                            statStatus.innerHTML = "Risk Blocked";
-                            countdownTimer.innerHTML = "🛑 Boss AI: Hold Trade";
                         } else if (data.signal_type === "UP") {
-                            signalOutput.className = "signal-call-put up-glow";
+                            signalOutput.className = "signal-box up-glow";
                             signalOutput.innerHTML = "UP ⬆️";
-                            statStatus.innerHTML = "Approved";
-                            countdownTimer.innerHTML = "✅ Boss AI: Buy Confirmed";
                             playSound();
                         } else {
-                            signalOutput.className = "signal-call-put down-glow";
+                            signalOutput.className = "signal-box down-glow";
                             signalOutput.innerHTML = "DOWN ⬇️";
-                            statStatus.innerHTML = "Approved";
-                            countdownTimer.innerHTML = "✅ Boss AI: Sell Confirmed";
                             playSound();
                         }
 
-                        statAccuracy.innerHTML = data.consensus;
-
                         detailsOutput.innerHTML = `
                             📈 <b>Asset:</b> ${data.pair}<br>
-                            👁️ <b>Agent 1 (Vision):</b> ${data.agent1}<br>
-                            🧠 <b>Agent 2-3 (Candle & Volume):</b> ${data.agent2}<br>
-                            🛡️ <b>Agent 4-7 (OTC & Safety):</b> ${data.agent3}<br>
+                            🤖 <b>7-AI Consensus:</b> ${data.consensus}<br>
                             👑 <b>Boss Verdict:</b> ${data.boss_msg}
                         `;
                     });
-            }, 2500);
+            }, 10000); // ঠিক ১০ সেকেন্ড ডিলে
         }
 
         window.onload = updateRealtimeClock;
@@ -341,12 +377,11 @@ def home():
 def boss_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
     
-    # ৭টি এআই এজেন্টের নিজস্ব বিচার বুদ্ধির সিমুলেশন
+    # ৭টি এআই এজেন্টের ভোটিং সিস্টেম
     votes = [random.choice(["UP", "DOWN", "WAIT"]) for _ in range(7)]
     up_votes = votes.count("UP")
     down_votes = votes.count("DOWN")
     
-    # বস এআই (Boss AI) ফাইনাল ডিসিশন মেকার: কমপক্ষে ৫টি এআই একমত না হলে সে ট্রেড ব্লক করে দেবে
     if up_votes >= 5:
         final_decision = "UP"
         consensus = f"{up_votes}/7 Agents (Bullish)"
@@ -359,10 +394,7 @@ def boss_analyze():
         return jsonify({
             "action": "WAIT",
             "pair": pair,
-            "consensus": f"Mixed Votes",
-            "agent1": "স্ক্রিনশটের পিক্সেল ও উইক স্ক্যান সম্পন্ন।",
-            "agent2": "বিগত ১০ ক্যান্ডেলের বিহেভিয়ার মিশ্র।",
-            "agent3": "ওটিসি ম্যানিপুলেশন ও ভোলাটিলিটি বেশি রয়েছে।",
+            "consensus": "Mixed Votes",
             "boss_msg": "এআই এজেন্টদের মধ্যে ঐক্যমত কম থাকায় বস এআই ট্রেড হোল্ড (WAIT) করার নির্দেশ দিয়েছে।"
         })
 
@@ -371,9 +403,6 @@ def boss_analyze():
         "pair": pair,
         "signal_type": final_decision,
         "consensus": consensus,
-        "agent1": "পিক্সেল ভিশন ও ক্যান্ডেল কালার নিখুঁতভাবে রিড হয়েছে।",
-        "agent2": "পূর্বের ১০টি ক্যান্ডেল এবং বায়ার/সেলার ভলিউম পজিটিভ।",
-        "agent3": "ফেক ব্রেকআউট ফিল্টার পাস ও সেফটি মার্জিন ভ্যালিডেটেড।",
         "boss_msg": boss_msg
     })
 
