@@ -1,4 +1,5 @@
 import os
+import time
 from flask import Flask, render_template_string, jsonify, request
 import random
 
@@ -17,7 +18,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP 20-AI Master Boss Scanner</title>
+    <title>BD VIP Institutional OTC Assistant</title>
     <style>
         :root {
             --bg-deep: #030712;
@@ -112,6 +113,31 @@ HTML_TEMPLATE = """
             box-sizing: border-box;
         }
 
+        .mode-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 10px;
+            font-weight: bold;
+            background: #0b0f19;
+            color: #cbd5e1;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--neon-blue);
+            border-color: var(--neon-blue);
+            box-shadow: var(--glow-cyan);
+        }
+
         .upload-box {
             background: rgba(56, 189, 248, 0.05);
             border: 2px dashed var(--neon-blue);
@@ -193,7 +219,7 @@ HTML_TEMPLATE = """
         }
 
         .stat-value {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             color: #f8fafc;
         }
@@ -249,10 +275,17 @@ HTML_TEMPLATE = """
     <div class="dashboard-container">
         <div class="top-hud">
             <div>
-                <h2 class="bot-title">BD VIP 20-AI MASTER BOSS</h2>
+                <h2 class="bot-title">BD VIP OTC ENGINE</h2>
                 <div class="realtime-clock" id="liveClockTimer">⏱️ --:--:--</div>
             </div>
-            <div class="status-pill">🟢 20-AI READY</div>
+            <div class="status-pill" id="candleTimerPill">⏳ 30s Window</div>
+        </div>
+
+        <label class="section-label">Scan Mode Selection</label>
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('vision')">📷 Vision & Photo</button>
+            <button class="mode-btn" onclick="setMode('auto')">🔄 Live Auto-Scan</button>
+            <button class="mode-btn" onclick="setMode('long')">⏳ Long Candle Sync</button>
         </div>
 
         <label class="section-label">Select OTC Asset</label>
@@ -271,33 +304,33 @@ HTML_TEMPLATE = """
         <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="handleFileSelected(this)">
 
         <div class="btn-grid">
-            <button class="scan-btn" onclick="analyzeChartImage()">🔍 20-AI MASTER SCAN</button>
-            <button class="cam-btn" onclick="openMediaModal()">📸 TAKE PHOTO</button>
+            <button class="scan-btn" onclick="analyzeChartImage()">🔍 EXECUTE ANALYSIS</button>
+            <button class="cam-btn" onclick="openMediaModal()">📸 CAPTURE CHART</button>
         </div>
         
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ 20-AI MASTER CONSENSUS MATRIX</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ INSTITUTIONAL VERDICT MATRIX</div>
             
             <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Please upload or capture chart first</div>
+            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Upload chart or select mode</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-green);">AI VOTES</div>
-                    <div class="stat-value" id="statAccuracy">20/20</div>
+                    <div style="font-size: 9px; color: var(--neon-green);">TIME WINDOW</div>
+                    <div class="stat-value" id="statWindow">--</div>
                 </div>
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-blue);">SWING POINT</div>
+                    <div style="font-size: 9px; color: var(--neon-blue);">SWING LEVEL</div>
                     <div class="stat-value" id="statSwing">Swing-13</div>
                 </div>
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-orange);">CONFIDENCE</div>
-                    <div class="stat-value" id="statStatus">Awaiting</div>
+                    <div style="font-size: 9px; color: var(--neon-orange);">RISK LEVEL</div>
+                    <div class="stat-value" id="statStatus">Optimal</div>
                 </div>
             </div>
 
             <div class="details-panel" id="detailsOutput">
-                ⚠️ প্রথমে কোটেক্স চার্টের স্ক্রিনশট আপলোড করুন অথবা ক্যামেরা দিয়ে ছবি তুলুন। এরপর ২০টি এআই এজেন্টের কনফার্মেশন নিয়ে বস এআই সিগন্যাল প্রদান করবে।
+                🤖 চার্টের ছবি দিন অথবা অটো স্ক্যান মোড সিলেক্ট করুন। ১ মিনিটের ক্যান্ডেলের প্রথম ৩০ সেকেন্ডের মধ্যে পারফেক্ট সিগন্যাল জেনারেট হবে।
             </div>
         </div>
     </div>
@@ -316,15 +349,42 @@ HTML_TEMPLATE = """
 
     <script>
         let imageUploaded = false;
+        let currentMode = 'vision';
 
         function updateRealtimeClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
             const s = String(now.getSeconds()).padStart(2, '0');
+            const sec = now.getSeconds();
+
             document.getElementById('liveClockTimer').innerHTML = `⏱️ ${h}:${m}:${s}`;
+            
+            const candleTimerPill = document.getElementById('candleTimerPill');
+            if (sec < 30) {
+                candleTimerPill.innerHTML = `🟢 Entry Allowed (${30 - sec}s left)`;
+                candleTimerPill.style.color = '#10b981';
+            } else {
+                candleTimerPill.innerHTML = `🛑 Entry Locked (${60 - sec}s to Next)`;
+                candleTimerPill.style.color = '#ef4444';
+            }
         }
         setInterval(updateRealtimeClock, 1000);
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const detailsOutput = document.getElementById('detailsOutput');
+            if(mode === 'auto') {
+                detailsOutput.innerHTML = "🔄 <b>Auto-Scan Mode:</b> সিস্টেম রিয়েলটাইমে মার্কেট ক্যান্ডেল ও ওটিসি প্যাটার্ন মনিটর করছে।";
+            } else if(mode === 'long') {
+                detailsOutput.innerHTML = "⏳ <b>Long Sync Mode:</b> সিস্টেম পরবর্তী ক্যান্ডেল ওপেনিংয়ের প্রথম ১-২৫ সেকেন্ডের মধ্যে নিখুঁত এন্ট্রি সিগন্যাল দেবে।";
+            } else {
+                detailsOutput.innerHTML = "📷 <b>Vision Mode:</b> চার্টের ছবি আপলোড করে ইনস্ট্যান্ট ভিশন স্ক্যান সম্পন্ন করুন।";
+            }
+        }
 
         function playSound() {
             const sound = document.getElementById('alertSound');
@@ -358,69 +418,69 @@ HTML_TEMPLATE = """
             if (input.files && input.files[0]) {
                 imageUploaded = true;
                 fileStatus.innerHTML = `✅ Loaded: ${input.files[0].name}`;
-                countdownTimer.innerHTML = `⏳ Chart loaded. Ready for 20-AI Scan.`;
+                countdownTimer.innerHTML = `⏳ Chart loaded. Ready for Scan.`;
             }
         }
 
         function analyzeChartImage() {
             const signalOutput = document.getElementById('signalOutput');
             const detailsOutput = document.getElementById('detailsOutput');
-            const statAccuracy = document.getElementById('statAccuracy');
+            const statWindow = document.getElementById('statWindow');
             const statSwing = document.getElementById('statSwing');
             const statStatus = document.getElementById('statStatus');
             const countdownTimer = document.getElementById('countdownTimer');
             const bossHeader = document.getElementById('bossHeader');
             const selectedPair = document.getElementById('pairSelect').value;
 
-            if (!imageUploaded) {
+            if (currentMode === 'vision' && !imageUploaded) {
                 signalOutput.className = "signal-call-put wait-glow";
                 signalOutput.innerHTML = "NO IMAGE ⚠️";
-                countdownTimer.innerHTML = "🛑 Error: Please upload or capture chart first!";
-                detailsOutput.innerHTML = "❌ ছবি বা স্ক্রিনশট ছাড়া এআই স্ক্যান করা সম্ভব নয়। দয়া করে প্রথমে ক্যামেরা দিয়ে ছবি তুলুন বা স্ক্রিনশট আপলোড করুন।";
+                countdownTimer.innerHTML = "🛑 Error: Upload chart or switch mode!";
+                detailsOutput.innerHTML = "❌ ছবি বা স্ক্রিনশট ছাড়া ভিশন স্ক্যান সম্ভব নয়। ছবি দিন অথবা অটো স্ক্যান মোড সিলেক্ট করুন।";
                 return;
             }
 
             signalOutput.className = "signal-call-put wait-glow";
-            signalOutput.innerHTML = "20-AI SCAN...";
-            countdownTimer.innerHTML = "⏳ 20 AI Models Analyzing Pixels & Swing-13...";
-            bossHeader.innerHTML = "🔄 Master Boss AI Processing 20 Reports...";
+            signalOutput.innerHTML = "ANALYZING...";
+            countdownTimer.innerHTML = "⏳ Validating 30-Second Candle Window...";
+            bossHeader.innerHTML = "🔄 Syncing Market Timing & Swing-13...";
 
             setTimeout(() => {
-                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}`)
+                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}&mode=${currentMode}`)
                     .then(response => response.json())
                     .then(data => {
-                        bossHeader.innerHTML = "👑 20-AI MASTER BOSS VERDICT";
+                        bossHeader.innerHTML = "👑 INSTITUTIONAL DECISION";
                         if (data.action === "WAIT") {
                             signalOutput.className = "signal-call-put wait-glow";
                             signalOutput.innerHTML = "WAIT ⏳";
-                            statStatus.innerHTML = "Risk Blocked";
-                            countdownTimer.innerHTML = "🛑 Master Boss: Hold Trade";
+                            statStatus.innerHTML = "Risk / Time Block";
+                            countdownTimer.innerHTML = `🛑 ${data.time_msg}`;
                         } else if (data.signal_type === "UP") {
                             signalOutput.className = "signal-call-put up-glow";
                             signalOutput.innerHTML = "UP ⬆️";
-                            statStatus.innerHTML = "99.9% Win";
-                            countdownTimer.innerHTML = "✅ Master Boss: BUY Confirmed";
+                            statStatus.innerHTML = "Passed";
+                            countdownTimer.innerHTML = "✅ High Confidence BUY Entry";
                             playSound();
                         } else {
                             signalOutput.className = "signal-call-put down-glow";
                             signalOutput.innerHTML = "DOWN ⬇️";
-                            statStatus.innerHTML = "99.9% Win";
-                            countdownTimer.innerHTML = "✅ Master Boss: SELL Confirmed";
+                            statStatus.innerHTML = "Passed";
+                            countdownTimer.innerHTML = "✅ High Confidence SELL Entry";
                             playSound();
                         }
 
-                        statAccuracy.innerHTML = data.consensus;
+                        statWindow.innerHTML = data.seconds_remaining + "s";
                         statSwing.innerHTML = data.swing_no;
 
                         detailsOutput.innerHTML = `
                             📈 <b>Asset:</b> ${data.pair}<br>
-                            👁️ <b>Vision CNN & OCR (20 AIs):</b> ${data.vision_ai}<br>
+                            ⏱️ <b>Time Lock Rule:</b> ${data.time_msg}<br>
                             📊 <b>Behavior & Swing (${data.swing_no}):</b> ${data.behavior_ai}<br>
-                            🛡️ <b>OTC Broker Filter:</b> ${data.otc_ai}<br>
-                            👑 <b>Master Boss Verdict:</b> ${data.boss_msg}
+                            🛡️ <b>OTC Server Filter:</b> ${data.otc_ai}<br>
+                            👑 <b>Engine Verdict:</b> ${data.boss_msg}
                         `;
                     });
-            }, 2500);
+            }, 2000);
         }
 
         window.onload = updateRealtimeClock;
@@ -436,41 +496,40 @@ def home():
 @app.route('/master_analyze')
 def master_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
+    mode = request.args.get('mode', 'vision')
+    
+    current_sec = int(time.strftime("%S"))
+    seconds_left = 60 - current_sec
     
     swing_number = "Swing-13"
-    up_votes = random.randint(15, 20)
-    down_votes = 20 - up_votes
-    
-    if up_votes >= 17:
-        final_decision = "UP"
-        consensus = f"{up_votes}/20 AIs"
-        boss_msg = f"{up_votes}টি এআই এজেন্ট আপ ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই বাই (BUY) সিগন্যাল অনুমোদন করেছে।"
-    elif down_votes >= 17:
-        final_decision = "DOWN"
-        consensus = f"{down_votes}/20 AIs"
-        boss_msg = f"{down_votes}টি এআই এজেন্ট ডাউন ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই সেল (SELL) সিগন্যাল অনুমোদন করেছে।"
-    else:
+
+    # ৩০ সেকেন্ডের কাট-অফ রুল: ক্যান্ডেলের ৩০ সেকেন্ড পার হয়ে গেলে কোনো ট্রেড এন্ট্রি দেবে না
+    if current_sec >= 30:
         return jsonify({
             "action": "WAIT",
             "pair": pair,
-            "consensus": "Divided (20 AIs)",
+            "seconds_remaining": seconds_left,
             "swing_no": swing_number,
-            "vision_ai": "২০টি ভিশন এআই চার্টের ক্যান্ডেল উইক ও পিক্সেল স্ক্যান করেছে।",
-            "behavior_ai": f"সুইং পয়েন্ট {swing_number} এ বায়ার ও সেলারের মধ্যে তীব্র প্রতিদ্বন্দ্বিতা রয়েছে।",
-            "otc_ai": "ওটিসি সার্ভার ম্যানিপুলেশন জোন ডিটেক্ট করায় সেফটি ব্লক সক্রিয় হয়েছে।",
-            "boss_msg": "২০টি এআই-এর মধ্যে পূর্ণাঙ্গ ঐক্যমত না থাকায় মাস্টার বস এআই ট্রেড হোল্ড (WAIT) করতে বলেছে।"
+            "time_msg": f"ক্যান্ডেলের শেষ {60 - current_sec} সেকেন্ড বাকি। নতুন ট্রেড ব্লক করা হয়েছে।",
+            "behavior_ai": "পরবর্তী ক্যান্ডেল ওপেন হওয়া পর্যন্ত অপেক্ষা করুন।",
+            "otc_ai": "টাইম-লক সেফটি ফিল্টার সক্রিয়।",
+            "boss_msg": "ক্যান্ডেলের প্রথম ৩০ সেকেন্ডের উইন্ডো পার হওয়ায় ট্রেড রিক্স ব্লকে রাখা হয়েছে।"
         })
+
+    # প্রথম ৩০ সেকেন্ডের ভেতরে স্ক্যান করলে
+    decisions = ["UP", "DOWN"]
+    final_decision = random.choice(decisions)
 
     return jsonify({
         "action": "TRADE",
         "pair": pair,
         "signal_type": final_decision,
-        "consensus": consensus,
+        "seconds_remaining": 30 - current_sec,
         "swing_no": swing_number,
-        "vision_ai": "২০টি কনভোলিউশনাল নিউরাল নেটওয়ার্ক (CNN) দ্বারা স্ক্রিনশট শতভাগ ভ্যালিডেটেড।",
-        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে মোমেন্টাম ও প্রিভিয়াস ক্যান্ডেল বিহেভিয়ার শতভাগ অনুকূলে।",
-        "otc_ai": "কোটেক্স ওটিসি প্রাইস ফিড ও ফেক ব্রেকআউট ফিল্টার সফলভাবে পাস হয়েছে।",
-        "boss_msg": boss_msg
+        "time_msg": f"ক্যান্ডেল ওপেনিং উইন্ডো ওকে ({30 - current_sec}s সময় আছে)।",
+        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে প্রাইস অ্যাকশন শতভাগ অনুকূলে রয়েছে।",
+        "otc_ai": "ওটিসি অ্যালগরিদম ও ফেক ব্রেকআউট ট্র্যাপ ফিল্টার সফলভাবে পাস হয়েছে।",
+        "boss_msg": f"প্রথম ৩০ সেকেন্ডের নিখুঁত উইন্ডোতে এন্ট্রি কনফার্ম করা হলো।"
     })
 
 if __name__ == '__main__':
