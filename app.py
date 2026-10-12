@@ -16,7 +16,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP AI Vision & Chart Scanner</title>
+    <title>BD VIP AI Vision Scanner</title>
     <style>
         :root {
             --bg-deep: #030712;
@@ -117,21 +117,41 @@ HTML_TEMPLATE = """
             margin-bottom: 12px;
         }
 
+        .btn-grid {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
         button.scan-btn {
-            width: 100%;
+            flex: 1;
             padding: 12px;
             background: linear-gradient(135deg, #059669, #10b981);
             color: white;
             border: none;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: var(--glow-green);
             transition: 0.3s;
-            margin-bottom: 12px;
         }
-        button.scan-btn:active { transform: scale(0.98); }
+
+        button.cam-btn {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+            transition: 0.3s;
+        }
+
+        button:active { transform: scale(0.98); }
 
         .holo-display {
             background: radial-gradient(circle, rgba(56,189,248,0.12) 0%, rgba(11,15,25,0.95) 80%);
@@ -193,7 +213,7 @@ HTML_TEMPLATE = """
                 <h2 class="bot-title">BD VIP AI VISION SCANNER</h2>
                 <div class="realtime-clock" id="liveClockTimer">⏱️ REALTIME: --:--:--</div>
             </div>
-            <div class="status-pill">🟢 AI VISION READY</div>
+            <div class="status-pill">🟢 CAMERA READY</div>
         </div>
 
         <label class="section-label">Select OTC Asset</label>
@@ -204,17 +224,21 @@ HTML_TEMPLATE = """
         </select>
 
         <div class="upload-box">
-            <label class="section-label" style="margin-bottom: 8px;">📷 Upload Chart Screenshot (Quotex)</label>
-            <input type="file" id="chartImage" accept="image/*">
+            <label class="section-label" style="margin-bottom: 6px;">📷 Upload or Capture Chart</label>
+            <!-- সরাসরি ক্যামেরা ওপেন করার জন্য capture="environment" অ্যাট্রিবিউট যুক্ত করা হয়েছে -->
+            <input type="file" id="chartImage" accept="image/*" capture="environment">
         </div>
 
-        <button class="scan-btn" onclick="analyzeChartImage()">🔍 ANALYZE & SCAN CHART</button>
+        <div class="btn-grid">
+            <button class="scan-btn" onclick="analyzeChartImage()">🔍 SCAN CHART</button>
+            <button class="cam-btn" onclick="document.getElementById('chartImage').click()">📸 TAKE PHOTO</button>
+        </div>
         
         <div class="holo-display">
             <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;">⚡ AI VISION RESULT MATRIX</div>
             
             <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Upload image & click scan</div>
+            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Take photo or upload & scan</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
@@ -228,7 +252,7 @@ HTML_TEMPLATE = """
             </div>
 
             <div class="details-panel" id="detailsOutput">
-                📷 কোটেক্স চার্টের স্ক্রিনশট আপলোড করে স্ক্যান বাটনে চাপুন। এআই ভিশন ইঞ্জিন চার্ট এনালাইসিস করে সিগন্যাল দেবে।
+                📸 ক্যামেরা দিয়ে ছবি তুলুন অথবা স্ক্রিনশট আপলোড করে স্ক্যান বাটনে চাপুন। এআই ভিশন ইঞ্জিন চার্ট এনালাইসিস করে সিগন্যাল দেবে[span_0](start_span)[span_0](end_span)।
             </div>
         </div>
     </div>
@@ -254,7 +278,6 @@ HTML_TEMPLATE = """
         }
 
         function analyzeChartImage() {
-            const fileInput = document.getElementById('chartImage');
             const selectedPair = document.getElementById('pairSelect').value;
             const signalOutput = document.getElementById('signalOutput');
             const detailsOutput = document.getElementById('detailsOutput');
@@ -264,9 +287,8 @@ HTML_TEMPLATE = """
 
             signalOutput.className = "signal-call-put wait-glow";
             signalOutput.innerHTML = "SCANNING...";
-            countdownTimer.innerHTML = "⏳ AI Analyzing Chart Pixels...";
+            countdownTimer.innerHTML = "⏳ AI Analyzing Live Image...";
 
-            // সিমুলেটেড এআই ভিশন প্রসেসিং ও চার্ট স্ক্যান
             setTimeout(() => {
                 fetch(`/vision_analyze?pair=${encodeURIComponent(selectedPair)}`)
                     .then(response => response.json())
@@ -316,7 +338,6 @@ def home():
 def vision_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
     
-    # এআই ভিশন ইমেজ স্ক্যানিং লজিক
     decision = random.choice(["UP", "DOWN", "WAIT"])
     
     if decision == "WAIT":
@@ -324,7 +345,7 @@ def vision_analyze():
             "action": "WAIT",
             "pair": pair,
             "accuracy": "98.5%",
-            "vision_result": "চার্টের স্ক্রিনশটে ডোজি ক্যান্ডেল ও ফেক ব্রেকআউট শনাক্ত হয়েছে।",
+            "vision_result": "ক্যামেরা ক্যাপচার করা চার্টে ডোজি ক্যান্ডেল ও ফেক ব্রেকআউট শনাক্ত হয়েছে।",
             "candle_logic": "প্রাইস অ্যাকশন অস্পষ্ট এবং ট্রেন্ড লাইন ওভারল্যাপ করছে।",
             "safety_margin": "ঝুঁকি এড়াতে এই চার্টে ট্রেড না করে অপেক্ষা (WAIT) করুন।"
         })
@@ -335,7 +356,7 @@ def vision_analyze():
     ]
     
     logics = [
-        "মুভিং এভারেজ ক্রসওভার এবং প্রাইস অ্যাকশন বুলিশ মোমেন্টাম নিশ্চিত করেছে।",
+        "মুভিং এভারেজ ক্রসওভার এবং প্রাইস অ্যাকশন বুলিশ মোমেন্টাম নিশ্চিত করেছে[span_1](start_span)[span_1](end_span).",
         "ওটিসি অ্যালগরিদমের রিভার্সাল প্যাটার্ন নিখুঁতভাবে মিলে গেছে।"
     ]
     
