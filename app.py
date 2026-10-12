@@ -4,10 +4,13 @@ import random
 app = Flask(__name__)
 
 OTC_PAIRS = [
-    "USD/BRL (OTC)", "USD/INR (OTC)", "USD/BDT (OTC)", "USD/PKR (OTC)",
-    "USD/EGP (OTC)", "USD/TRY (OTC)", "USD/CAD (OTC)", "USD/MXN (OTC)",
-    "EUR/USD (OTC)", "GBP/USD (OTC)", "AUD/CHF (OTC)", "CAD/JPY (OTC)",
-    "CHF/JPY (OTC)", "GBP/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
+    {"name": "USD/BRL (OTC)", "tv": "FX_IDC:USDBRL"},
+    {"name": "USD/INR (OTC)", "tv": "FX_IDC:USDINR"},
+    {"name": "USD/BDT (OTC)", "tv": "FX_IDC:USDBDT"},
+    {"name": "EUR/USD (OTC)", "tv": "FX:EURUSD"},
+    {"name": "GBP/USD (OTC)", "tv": "FX:GBPUSD"},
+    {"name": "Gold (OTC)", "tv": "OANDA:XAUUSD"},
+    {"name": "Bitcoin (OTC)", "tv": "BINANCE:BTCUSDT"}
 ]
 
 HTML_TEMPLATE = """
@@ -16,9 +19,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP Pro Trading Bot - Lightweight Chart & 7-AI Engine</title>
-    <!-- TradingView Lightweight Charts CDN -->
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <title>BD VIP Pro Trading Bot - Live Chart & 7-AI</title>
     <style>
         :root {
             --bg-deep: #030712;
@@ -37,7 +38,7 @@ HTML_TEMPLATE = """
             color: #f8fafc; 
             font-family: 'Segoe UI', Roboto, sans-serif; 
             margin: 0; 
-            padding: 5px; 
+            padding: 4px; 
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -45,41 +46,37 @@ HTML_TEMPLATE = """
             overflow: hidden;
         }
 
-        /* Top Section: Live TradingView Chart (62% Height) */
+        /* Top Section: Live TradingView Widget (55% Height) */
         .chart-section {
-            height: 60%;
+            height: 55%;
             background: var(--panel-bg);
             border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 14px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: hidden;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: rgba(11, 15, 25, 0.9);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            font-size: 12px;
-        }
-
-        #tradingviewChart {
+        .tradingview-widget-container {
             flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        .tradingview-widget-container__widget {
+            height: 100%;
             width: 100%;
         }
 
-        /* Bottom Section: Control & 7-AI Scan Panel (38% Height) */
+        /* Bottom Section: Control & 7-AI Scan Panel (43% Height) */
         .control-section {
-            height: 38%;
+            height: 43%;
             background: var(--panel-bg);
             border: 1px solid rgba(56, 189, 248, 0.4);
-            border-radius: 14px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 8px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -90,12 +87,12 @@ HTML_TEMPLATE = """
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .bot-title { 
             color: #ffffff; 
-            font-size: 14px; 
+            font-size: 13px; 
             margin: 0; 
             font-weight: 900; 
             text-shadow: var(--glow-cyan);
@@ -110,7 +107,7 @@ HTML_TEMPLATE = """
         .controls-row {
             display: flex;
             gap: 6px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
         select { 
@@ -136,7 +133,7 @@ HTML_TEMPLATE = """
             cursor: pointer;
             box-shadow: var(--glow-green);
             transition: 0.3s;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         button.scan-btn:active { transform: scale(0.98); }
 
@@ -157,7 +154,7 @@ HTML_TEMPLATE = """
         }
         .scanning #laserOverlay {
             display: block;
-            animation: laserScan 1.5s infinite linear;
+            animation: laserScan 1.2s infinite linear;
         }
 
         .signal-grid {
@@ -165,16 +162,16 @@ HTML_TEMPLATE = """
             gap: 8px;
             align-items: center;
             background: rgba(11, 15, 25, 0.85);
-            border-radius: 10px;
-            padding: 6px 10px;
+            border-radius: 8px;
+            padding: 6px 8px;
             border: 1px solid rgba(56, 189, 248, 0.2);
         }
 
         .signal-box {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
             text-align: center;
-            min-width: 90px;
+            min-width: 80px;
         }
         .up-glow { color: var(--neon-green); text-shadow: var(--glow-green); }
         .down-glow { color: var(--neon-red); text-shadow: var(--glow-red); }
@@ -190,13 +187,29 @@ HTML_TEMPLATE = """
 </head>
 <body id="appBody">
 
-    <!-- Top Section: TradingView Lightweight Chart -->
+    <!-- Top Section: Live TradingView Advanced Chart Widget -->
     <div class="chart-section" id="chartContainerWrapper">
-        <div class="chart-header">
-            <span id="chartPairTitle" style="font-weight: bold; color: var(--neon-blue);">📈 USD/BRL (OTC) Live Chart</span>
-            <span style="font-size: 10px; color: var(--neon-green);">🟢 Real-time WebSocket Feed</span>
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget" id="tv_chart_container"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+            {
+              "width": "100%",
+              "height": "100%",
+              "symbol": "FX_IDC:USDBRL",
+              "interval": "1",
+              "timezone": "Asia/Dhaka",
+              "theme": "dark",
+              "style": "1",
+              "locale": "en",
+              "enable_publishing": false,
+              "hide_top_toolbar": false,
+              "hide_legend": false,
+              "save_image": false,
+              "calendar": false,
+              "support_host": "https://www.tradingview.com"
+            }
+            </script>
         </div>
-        <div id="tradingviewChart"></div>
         <div id="laserOverlay"></div>
     </div>
 
@@ -208,9 +221,9 @@ HTML_TEMPLATE = """
         </div>
 
         <div class="controls-row">
-            <select id="pairSelect" onchange="changeAssetChart()">
+            <select id="pairSelect">
                 {% for pair in pairs %}
-                <option value="{{ pair }}">{{ pair }}</option>
+                <option value="{{ pair.tv }}">{{ pair.name }}</option>
                 {% endfor %}
             </select>
             <select id="timeSelect">
@@ -232,7 +245,6 @@ HTML_TEMPLATE = """
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
-        // রিয়েলটাইম ঘড়ি
         function updateRealtimeClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
@@ -250,72 +262,6 @@ HTML_TEMPLATE = """
             }
         }
 
-        // TradingView Lightweight Charts সেটআপ
-        const chartElement = document.getElementById('tradingviewChart');
-        const chart = LightweightCharts.createChart(chartElement, {
-            layout: {
-                background: { type: 'solid', color: '#0f172a' },
-                textColor: '#94a3b8',
-            },
-            grid: {
-                vertLines: { color: 'rgba(56, 189, 248, 0.08)' },
-                horzLines: { color: 'rgba(56, 189, 248, 0.08)' },
-            },
-            rightPriceScale: {
-                borderColor: 'rgba(56, 189, 248, 0.2)',
-            },
-            timeScale: {
-                borderColor: 'rgba(56, 189, 248, 0.2)',
-                timeVisible: true,
-                secondsVisible: true,
-            },
-        });
-
-        const candlestickSeries = chart.addCandlestickSeries({
-            upColor: '#10b981',
-            downColor: '#ef4444',
-            borderVisible: false,
-            wickUpColor: '#10b981',
-            wickDownColor: '#ef4444',
-        });
-
-        // ডামি রিয়েল-টাইম ক্যান্ডেল ডাটা জেনারেট করে চার্টে লোড করা
-        let basePrice = 5.2500;
-        let currentTime = Math.floor(Date.now() / 1000) - 1200;
-        let initialData = [];
-
-        for (let i = 0; i < 30; i++) {
-            let open = basePrice;
-            let close = open + (Math.random() - 0.48) * 0.0050;
-            let high = Math.max(open, close) + Math.random() * 0.0020;
-            let low = Math.min(open, close) - Math.random() * 0.0020;
-            initialData.push({ time: currentTime, open: open, high: high, low: low, close: close });
-            basePrice = close;
-            currentTime += 60; // প্রতি ১ মিনিট পর পর ক্যান্ডেল
-        }
-        candlestickSeries.setData(initialData);
-
-        // রিয়েল-টাইম লাইভ টিক আপডেট সিমুলেশন (WebSocket আদলে ক্যান্ডেল লাইভ আপডেট)
-        setInterval(() => {
-            const lastCandle = initialData[initialData.length - 1];
-            let newClose = lastCandle.close + (Math.random() - 0.49) * 0.0010;
-            let newHigh = Math.max(lastCandle.high, newClose);
-            let newLow = Math.min(lastCandle.low, newClose);
-            
-            candlestickSeries.update({
-                time: lastCandle.time,
-                open: lastCandle.open,
-                high: newHigh,
-                low: newLow,
-                close: newClose
-            });
-        }, 1000);
-
-        function changeAssetChart() {
-            const pair = document.getElementById('pairSelect').value;
-            document.getElementById('chartPairTitle').innerText = `📈 ${pair} Live Chart`;
-        }
-
         // ১০ সেকেন্ডের লেজার স্ক্যান এবং ৭-এআই বস ইঞ্জিন ট্রিগার
         function startTenSecondScan() {
             const appBody = document.getElementById('appBody');
@@ -324,7 +270,6 @@ HTML_TEMPLATE = """
             const detailsOutput = document.getElementById('detailsOutput');
             const selectedPair = document.getElementById('pairSelect').value;
 
-            // স্ক্যানিং অ্যানিমেশন চালু
             appBody.classList.add('scanning');
             scanBtn.disabled = true;
             scanBtn.innerText = "⏳ SCANNING MARKET (10s)...";
@@ -332,9 +277,8 @@ HTML_TEMPLATE = """
             signalOutput.innerHTML = "SCAN...";
             detailsOutput.innerHTML = "🔍 ১০ সেকেন্ডের লেজার স্ক্যান চলছে... ৭টি এআই এজেন্ট চার্টের পিক্সেল ও ক্যান্ডেল বিহেভিয়ার এনালাইসিস করছে।";
 
-            // ১০ সেকেন্ড পর ব্যাকএন্ড থেকে ফাইনাল সিগন্যাল ফেচ করা
             setTimeout(() => {
-                fetch(`/boss_analyze?pair=${encodeURIComponent(selectedPair)}`)
+                fetch(`/boss_analyze?symbol=${encodeURIComponent(selectedPair)}`)
                     .then(response => response.json())
                     .then(data => {
                         appBody.classList.remove('scanning');
@@ -355,12 +299,12 @@ HTML_TEMPLATE = """
                         }
 
                         detailsOutput.innerHTML = `
-                            📈 <b>Asset:</b> ${data.pair}<br>
+                            📈 <b>Asset:</b> ${data.symbol}<br>
                             🤖 <b>7-AI Consensus:</b> ${data.consensus}<br>
                             👑 <b>Boss Verdict:</b> ${data.boss_msg}
                         `;
                     });
-            }, 10000); // ঠিক ১০ সেকেন্ড ডিলে
+            }, 10000);
         }
 
         window.onload = updateRealtimeClock;
@@ -375,9 +319,8 @@ def home():
 
 @app.route('/boss_analyze')
 def boss_analyze():
-    pair = request.args.get('pair', 'USD/BRL (OTC)')
+    symbol = request.args.get('symbol', 'FX_IDC:USDBRL')
     
-    # ৭টি এআই এজেন্টের ভোটিং সিস্টেম
     votes = [random.choice(["UP", "DOWN", "WAIT"]) for _ in range(7)]
     up_votes = votes.count("UP")
     down_votes = votes.count("DOWN")
@@ -393,14 +336,14 @@ def boss_analyze():
     else:
         return jsonify({
             "action": "WAIT",
-            "pair": pair,
+            "symbol": symbol,
             "consensus": "Mixed Votes",
             "boss_msg": "এআই এজেন্টদের মধ্যে ঐক্যমত কম থাকায় বস এআই ট্রেড হোল্ড (WAIT) করার নির্দেশ দিয়েছে।"
         })
 
     return jsonify({
         "action": "TRADE",
-        "pair": pair,
+        "symbol": symbol,
         "signal_type": final_decision,
         "consensus": consensus,
         "boss_msg": boss_msg
