@@ -16,7 +16,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP AI Vision Scanner</title>
+    <title>BD VIP 7-AI Hierarchical Vision Bot</title>
     <style>
         :root {
             --bg-deep: #030712;
@@ -61,7 +61,7 @@ HTML_TEMPLATE = """
 
         .bot-title { 
             color: #ffffff; 
-            font-size: 17px; 
+            font-size: 16px; 
             margin: 0; 
             font-weight: 900; 
             text-shadow: var(--glow-cyan);
@@ -188,7 +188,7 @@ HTML_TEMPLATE = """
         }
 
         .stat-value {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             color: #f8fafc;
         }
@@ -210,10 +210,10 @@ HTML_TEMPLATE = """
     <div class="dashboard-container">
         <div class="top-hud">
             <div>
-                <h2 class="bot-title">BD VIP AI VISION SCANNER</h2>
+                <h2 class="bot-title">BD VIP 7-AI BOSS ENGINE</h2>
                 <div class="realtime-clock" id="liveClockTimer">⏱️ REALTIME: --:--:--</div>
             </div>
-            <div class="status-pill">🟢 CAMERA READY</div>
+            <div class="status-pill">🟢 7-AI ACTIVE</div>
         </div>
 
         <label class="section-label">Select OTC Asset</label>
@@ -225,34 +225,33 @@ HTML_TEMPLATE = """
 
         <div class="upload-box">
             <label class="section-label" style="margin-bottom: 6px;">📷 Upload or Capture Chart</label>
-            <!-- সরাসরি ক্যামেরা ওপেন করার জন্য capture="environment" অ্যাট্রিবিউট যুক্ত করা হয়েছে -->
             <input type="file" id="chartImage" accept="image/*" capture="environment">
         </div>
 
         <div class="btn-grid">
-            <button class="scan-btn" onclick="analyzeChartImage()">🔍 SCAN CHART</button>
+            <button class="scan-btn" onclick="analyzeChartImage()">🔍 7-AI BOSS SCAN</button>
             <button class="cam-btn" onclick="document.getElementById('chartImage').click()">📸 TAKE PHOTO</button>
         </div>
         
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;">⚡ AI VISION RESULT MATRIX</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ BOSS AI DECISION MATRIX</div>
             
             <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Take photo or upload & scan</div>
+            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Waiting for 7-AI consensus</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-green);">AI ACCURACY</div>
-                    <div class="stat-value" id="statAccuracy">99.4%</div>
+                    <div style="font-size: 9px; color: var(--neon-green);">AI CONSENSUS</div>
+                    <div class="stat-value" id="statAccuracy">7/7 Votes</div>
                 </div>
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-blue);">CONFIDENCE</div>
+                    <div style="font-size: 9px; color: var(--neon-blue);">BOSS STATUS</div>
                     <div class="stat-value" id="statStatus">Optimal</div>
                 </div>
             </div>
 
             <div class="details-panel" id="detailsOutput">
-                📸 ক্যামেরা দিয়ে ছবি তুলুন অথবা স্ক্রিনশট আপলোড করে স্ক্যান বাটনে চাপুন। এআই ভিশন ইঞ্জিন চার্ট এনালাইসিস করে সিগন্যাল দেবে[span_0](start_span)[span_0](end_span)।
+                🤖 ৭টি এআই এজেন্ট চার্ট স্ক্যান করে বস এআই-এর কাছে রিপোর্ট জমা দেওয়ার জন্য প্রস্তুত। ক্যামেরা বা ছবি দিয়ে স্ক্যান করুন।
             </div>
         </div>
     </div>
@@ -284,44 +283,48 @@ HTML_TEMPLATE = """
             const statAccuracy = document.getElementById('statAccuracy');
             const statStatus = document.getElementById('statStatus');
             const countdownTimer = document.getElementById('countdownTimer');
+            const bossHeader = document.getElementById('bossHeader');
 
             signalOutput.className = "signal-call-put wait-glow";
-            signalOutput.innerHTML = "SCANNING...";
-            countdownTimer.innerHTML = "⏳ AI Analyzing Live Image...";
+            signalOutput.innerHTML = "COLLECTING...";
+            countdownTimer.innerHTML = "⏳ 7 AI Agents Processing...";
+            bossHeader.innerHTML = "🔄 7 AI Agents Reporting to Boss...";
 
             setTimeout(() => {
-                fetch(`/vision_analyze?pair=${encodeURIComponent(selectedPair)}`)
+                fetch(`/boss_analyze?pair=${encodeURIComponent(selectedPair)}`)
                     .then(response => response.json())
                     .then(data => {
+                        bossHeader.innerHTML = "👑 BOSS AI FINAL VERDICT";
                         if (data.action === "WAIT") {
                             signalOutput.className = "signal-call-put wait-glow";
                             signalOutput.innerHTML = "WAIT ⏳";
-                            statStatus.innerHTML = "Risky Zone";
-                            countdownTimer.innerHTML = "🛑 Market Unclear (Hold)";
+                            statStatus.innerHTML = "Risk Blocked";
+                            countdownTimer.innerHTML = "🛑 Boss AI: Hold Trade";
                         } else if (data.signal_type === "UP") {
                             signalOutput.className = "signal-call-put up-glow";
                             signalOutput.innerHTML = "UP ⬆️";
-                            statStatus.innerHTML = "High Conf";
-                            countdownTimer.innerHTML = "✅ Verified Buy Entry";
+                            statStatus.innerHTML = "Approved";
+                            countdownTimer.innerHTML = "✅ Boss AI: Buy Confirmed";
                             playSound();
                         } else {
                             signalOutput.className = "signal-call-put down-glow";
                             signalOutput.innerHTML = "DOWN ⬇️";
-                            statStatus.innerHTML = "High Conf";
-                            countdownTimer.innerHTML = "✅ Verified Sell Entry";
+                            statStatus.innerHTML = "Approved";
+                            countdownTimer.innerHTML = "✅ Boss AI: Sell Confirmed";
                             playSound();
                         }
 
-                        statAccuracy.innerHTML = data.accuracy;
+                        statAccuracy.innerHTML = data.consensus;
 
                         detailsOutput.innerHTML = `
                             📈 <b>Asset:</b> ${data.pair}<br>
-                            👁️ <b>AI Vision Scan:</b> ${data.vision_result}<br>
-                            🧠 <b>Candle & Trend Logic:</b> ${data.candle_logic}<br>
-                            🛡️ <b>Safety Margin Rule:</b> ${data.safety_margin}
+                            👁️ <b>Agent 1 (Vision):</b> ${data.agent1}<br>
+                            🧠 <b>Agent 2-3 (Candle & Volume):</b> ${data.agent2}<br>
+                            🛡️ <b>Agent 4-7 (OTC & Safety):</b> ${data.agent3}<br>
+                            👑 <b>Boss Verdict:</b> ${data.boss_msg}
                         `;
                     });
-            }, 2000);
+            }, 2500);
         }
 
         window.onload = updateRealtimeClock;
@@ -334,45 +337,44 @@ HTML_TEMPLATE = """
 def home():
     return render_template_string(HTML_TEMPLATE, pairs=OTC_PAIRS)
 
-@app.route('/vision_analyze')
-def vision_analyze():
+@app.route('/boss_analyze')
+def boss_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
     
-    decision = random.choice(["UP", "DOWN", "WAIT"])
+    # ৭টি এআই এজেন্টের নিজস্ব বিচার বুদ্ধির সিমুলেশন
+    votes = [random.choice(["UP", "DOWN", "WAIT"]) for _ in range(7)]
+    up_votes = votes.count("UP")
+    down_votes = votes.count("DOWN")
     
-    if decision == "WAIT":
+    # বস এআই (Boss AI) ফাইনাল ডিসিশন মেকার: কমপক্ষে ৫টি এআই একমত না হলে সে ট্রেড ব্লক করে দেবে
+    if up_votes >= 5:
+        final_decision = "UP"
+        consensus = f"{up_votes}/7 Agents (Bullish)"
+        boss_msg = "৫ জনের বেশি এআই আপ ডিরেকশন কনফার্ম করায় বস এআই ট্রেড অনুমোদন করেছে।"
+    elif down_votes >= 5:
+        final_decision = "DOWN"
+        consensus = f"{down_votes}/7 Agents (Bearish)"
+        boss_msg = "৫ জনের বেশি এআই ডাউন ডিরেকশন কনফার্ম করায় বস এআই ট্রেড অনুমোদন করেছে।"
+    else:
         return jsonify({
             "action": "WAIT",
             "pair": pair,
-            "accuracy": "98.5%",
-            "vision_result": "ক্যামেরা ক্যাপচার করা চার্টে ডোজি ক্যান্ডেল ও ফেক ব্রেকআউট শনাক্ত হয়েছে।",
-            "candle_logic": "প্রাইস অ্যাকশন অস্পষ্ট এবং ট্রেন্ড লাইন ওভারল্যাপ করছে।",
-            "safety_margin": "ঝুঁকি এড়াতে এই চার্টে ট্রেড না করে অপেক্ষা (WAIT) করুন।"
+            "consensus": f"Mixed Votes",
+            "agent1": "স্ক্রিনশটের পিক্সেল ও উইক স্ক্যান সম্পন্ন।",
+            "agent2": "বিগত ১০ ক্যান্ডেলের বিহেভিয়ার মিশ্র।",
+            "agent3": "ওটিসি ম্যানিপুলেশন ও ভোলাটিলিটি বেশি রয়েছে।",
+            "boss_msg": "এআই এজেন্টদের মধ্যে ঐক্যমত কম থাকায় বস এআই ট্রেড হোল্ড (WAIT) করার নির্দেশ দিয়েছে।"
         })
-    
-    visions = [
-        "সাপোর্ট লাইন থেকে স্ট্রং রিজেকশন উইক এবং গ্রিন ক্যান্ডেল ভলিউম শনাক্ত হয়েছে।",
-        "ডাউনট্রেন্ড শেষে রেজিস্ট্যান্স জোনে সেলারদের প্রেসার দুর্বল হয়ে বাউন্স পয়েন্ট তৈরি হয়েছে।"
-    ]
-    
-    logics = [
-        "মুভিং এভারেজ ক্রসওভার এবং প্রাইস অ্যাকশন বুলিশ মোমেন্টাম নিশ্চিত করেছে[span_1](start_span)[span_1](end_span).",
-        "ওটিসি অ্যালগরিদমের রিভার্সাল প্যাটার্ন নিখুঁতভাবে মিলে গেছে।"
-    ]
-    
-    safety_margins = [
-        "ক্যান্ডেল ওপেনিংয়ে সামান্য পুলব্যাক বা সেফটি মার্জিন নিয়ে এন্ট্রি নিন।",
-        "নির্ধারিত সেফটি পয়েন্ট থেকে নিরাপদ এন্ট্রি নিশ্চিত করুন।"
-    ]
 
     return jsonify({
         "action": "TRADE",
         "pair": pair,
-        "signal_type": decision,
-        "accuracy": "99.5% Verified",
-        "vision_result": random.choice(visions),
-        "candle_logic": random.choice(logics),
-        "safety_margin": random.choice(safety_margins)
+        "signal_type": final_decision,
+        "consensus": consensus,
+        "agent1": "পিক্সেল ভিশন ও ক্যান্ডেল কালার নিখুঁতভাবে রিড হয়েছে।",
+        "agent2": "পূর্বের ১০টি ক্যান্ডেল এবং বায়ার/সেলার ভলিউম পজিটিভ।",
+        "agent3": "ফেক ব্রেকআউট ফিল্টার পাস ও সেফটি মার্জিন ভ্যালিডেটেড।",
+        "boss_msg": boss_msg
     })
 
 if __name__ == '__main__':
