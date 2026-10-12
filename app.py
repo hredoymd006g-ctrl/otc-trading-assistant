@@ -208,6 +208,41 @@ HTML_TEMPLATE = """
             line-height: 1.5;
             text-align: left;
         }
+
+        /* Custom Modal Popup for Camera / Gallery Choice */
+        #mediaModal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #0f172a;
+            border: 1px solid var(--neon-blue);
+            border-radius: 16px;
+            padding: 20px;
+            width: 85%;
+            max-width: 320px;
+            text-align: center;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.9);
+        }
+        .modal-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-cam-opt { background: #d97706; color: white; box-shadow: 0 0 10px rgba(245,158,11,0.4); }
+        .btn-gallery-opt { background: #059669; color: white; box-shadow: 0 0 10px rgba(16,185,129,0.4); }
+        .btn-cancel-opt { background: #334155; color: #cbd5e1; }
     </style>
 </head>
 <body>
@@ -227,22 +262,25 @@ HTML_TEMPLATE = """
             {% endfor %}
         </select>
 
-        <div class="upload-box" onclick="document.getElementById('chartImage').click()">
+        <div class="upload-box" onclick="openMediaModal()">
             <label class="section-label" style="margin-bottom: 4px; cursor: pointer;">📷 Quotex Chart Capture / Screenshot</label>
-            <input type="file" id="chartImage" accept="image/*" capture="environment" style="display:none;" onchange="handleImageSelected()">
-            <span id="fileStatus" style="font-size: 11px; color: var(--neon-blue);">কোটেক্স চার্টের স্ক্রিনশট বা ছবি এখানে দিন</span>
+            <span id="fileStatus" style="font-size: 11px; color: var(--neon-blue);">কোটেক্স চার্টের স্ক্রিনশট বা ছবি দিতে এখানে চাপুন</span>
         </div>
+
+        <!-- Hidden inputs for Camera and Gallery Upload -->
+        <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none;" onchange="handleFileSelected(this)">
+        <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="handleFileSelected(this)">
 
         <div class="btn-grid">
             <button class="scan-btn" onclick="analyzeChartImage()">🔍 20-AI MASTER SCAN</button>
-            <button class="cam-btn" onclick="document.getElementById('chartImage').click()">📸 TAKE PHOTO</button>
+            <button class="cam-btn" onclick="openMediaModal()">📸 TAKE PHOTO</button>
         </div>
         
         <div class="holo-display">
             <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ 20-AI MASTER CONSENSUS MATRIX</div>
             
             <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Please upload chart image first</div>
+            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Please upload or capture chart first</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
@@ -262,6 +300,17 @@ HTML_TEMPLATE = """
             <div class="details-panel" id="detailsOutput">
                 ⚠️ প্রথমে কোটেক্স চার্টের স্ক্রিনশট আপলোড করুন অথবা ক্যামেরা দিয়ে ছবি তুলুন। এরপর ২০টি এআই এজেন্টের কনফার্মেশন নিয়ে বস এআই সিগন্যাল প্রদান করবে।
             </div>
+        </div>
+    </div>
+
+    <!-- Selection Modal Popup -->
+    <div id="mediaModal">
+        <div class="modal-content">
+            <h3 style="color: var(--neon-blue); margin-top: 0; font-size: 15px;">🖼️ ইনপুট মাধ্যম নির্বাচন করুন</h3>
+            <p style="font-size: 11px; color: #cbd5e1; margin-bottom: 15px;">আপনি কোটেক্স চার্ট কীভাবে যুক্ত করতে চান?</p>
+            <button class="modal-btn btn-cam-opt" onclick="triggerCamera()">📸 সরাসরি ছবি তুলুন (Camera)</button>
+            <button class="modal-btn btn-gallery-opt" onclick="triggerGallery()">🖼️ স্ক্রিনশট আপলোড করুন (Gallery)</button>
+            <button class="modal-btn btn-cancel-opt" onclick="closeMediaModal()">বাতিল করুন</button>
         </div>
     </div>
 
@@ -287,19 +336,35 @@ HTML_TEMPLATE = """
             }
         }
 
-        function handleImageSelected() {
-            const fileInput = document.getElementById('chartImage');
+        function openMediaModal() {
+            document.getElementById('mediaModal').style.display = 'flex';
+        }
+
+        function closeMediaModal() {
+            document.getElementById('mediaModal').style.display = 'none';
+        }
+
+        function triggerCamera() {
+            closeMediaModal();
+            document.getElementById('cameraInput').click();
+        }
+
+        function triggerGallery() {
+            closeMediaModal();
+            document.getElementById('galleryInput').click();
+        }
+
+        function handleFileSelected(input) {
             const fileStatus = document.getElementById('fileStatus');
             const countdownTimer = document.getElementById('countdownTimer');
-            if (fileInput.files && fileInput.files[0]) {
+            if (input.files && input.files[0]) {
                 imageUploaded = true;
-                fileStatus.innerHTML = `✅ Image Loaded: ${fileInput.files[0].name}`;
+                fileStatus.innerHTML = `✅ Loaded: ${input.files[0].name}`;
                 countdownTimer.innerHTML = `⏳ Chart loaded. Ready for 20-AI Scan.`;
             }
         }
 
         function analyzeChartImage() {
-            const fileInput = document.getElementById('chartImage');
             const signalOutput = document.getElementById('signalOutput');
             const detailsOutput = document.getElementById('detailsOutput');
             const statAccuracy = document.getElementById('statAccuracy');
@@ -309,108 +374,14 @@ HTML_TEMPLATE = """
             const bossHeader = document.getElementById('bossHeader');
             const selectedPair = document.getElementById('pairSelect').value;
 
-            // ছবি না দিলে স্ক্যান করতে দেবে না এবং সতর্কবার্তা দেখাবে
-            if (!imageUploaded || !fileInput.files[0]) {
+            if (!imageUploaded) {
                 signalOutput.className = "signal-call-put wait-glow";
                 signalOutput.innerHTML = "NO IMAGE ⚠️";
-                countdownTimer.innerHTML = "🛑 Error: Please upload chart image first!";
-                detailsOutput.innerHTML = "❌ ছবি বা স্ক্রিনশট ছাড়া এআই স্ক্যান করা সম্ভব নয়। দয়া করে প্রথমে কোটেক্স চার্টের ছবি আপলোড বা তুলুন।";
+                countdownTimer.innerHTML = "🛑 Error: Please upload or capture chart first!";
+                detailsOutput.innerHTML = "❌ ছবি বা স্ক্রিনশট ছাড়া এআই স্ক্যান করা সম্ভব নয়। দয়া করে প্রথমে ক্যামেরা দিয়ে ছবি তুলুন বা স্ক্রিনশট আপলোড করুন।";
                 return;
             }
 
             signalOutput.className = "signal-call-put wait-glow";
             signalOutput.innerHTML = "20-AI SCAN...";
-            countdownTimer.innerHTML = "⏳ 20 AI Models Analyzing Pixels & Swing-13...";
-            bossHeader.innerHTML = "🔄 Master Boss AI Processing 20 Reports...";
-
-            setTimeout(() => {
-                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        bossHeader.innerHTML = "👑 20-AI MASTER BOSS VERDICT";
-                        if (data.action === "WAIT") {
-                            signalOutput.className = "signal-call-put wait-glow";
-                            signalOutput.innerHTML = "WAIT ⏳";
-                            statStatus.innerHTML = "Risk Blocked";
-                            countdownTimer.innerHTML = "🛑 Master Boss: Hold Trade";
-                        } else if (data.signal_type === "UP") {
-                            signalOutput.className = "signal-call-put up-glow";
-                            signalOutput.innerHTML = "UP ⬆️";
-                            statStatus.innerHTML = "99.9% Win";
-                            countdownTimer.innerHTML = "✅ Master Boss: BUY Confirmed";
-                            playSound();
-                        } else {
-                            signalOutput.className = "signal-call-put down-glow";
-                            signalOutput.innerHTML = "DOWN ⬇️";
-                            statStatus.innerHTML = "99.9% Win";
-                            countdownTimer.innerHTML = "✅ Master Boss: SELL Confirmed";
-                            playSound();
-                        }
-
-                        statAccuracy.innerHTML = data.consensus;
-                        statSwing.innerHTML = data.swing_no;
-
-                        detailsOutput.innerHTML = `
-                            📈 <b>Asset:</b> ${data.pair}<br>
-                            👁️ <b>Vision CNN & OCR (20 AIs):</b> ${data.vision_ai}<br>
-                            📊 <b>Behavior & Swing (${data.swing_no}):</b> ${data.behavior_ai}<br>
-                            🛡️ <b>OTC Broker Filter:</b> ${data.otc_ai}<br>
-                            👑 <b>Master Boss Verdict:</b> ${data.boss_msg}
-                        `;
-                    });
-            }, 2500);
-        }
-
-        window.onload = updateRealtimeClock;
-    </script>
-</body>
-</html>
-"""
-
-@app.route('/')
-def home():
-    return render_template_string(HTML_TEMPLATE, pairs=OTC_PAIRS)
-
-@app.route('/master_analyze')
-def master_analyze():
-    pair = request.args.get('pair', 'USD/BRL (OTC)')
-    
-    # ২০টি এআই এজেন্টের ভোট এবং সুইং পয়েন্ট ১৩ (Swing-13) লজিক
-    swing_number = "Swing-13"
-    up_votes = random.randint(15, 20)
-    down_votes = 20 - up_votes
-    
-    if up_votes >= 17:
-        final_decision = "UP"
-        consensus = f"{up_votes}/20 AIs"
-        boss_msg = f"{up_votes}টি এআই এজেন্ট আপ ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই বাই (BUY) সিগন্যাল অনুমোদন করেছে।"
-    elif down_votes >= 17:
-        final_decision = "DOWN"
-        consensus = f"{down_votes}/20 AIs"
-        boss_msg = f"{down_votes}টি এআই এজেন্ট ডাউন ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই সেল (SELL) সিগন্যাল অনুমোদন করেছে।"
-    else:
-        return jsonify({
-            "action": "WAIT",
-            "pair": pair,
-            "consensus": "Divided (20 AIs)",
-            "swing_no": swing_number,
-            "vision_ai": "২০টি ভিশন এআই চার্টের ক্যান্ডেল উইক ও পিক্সেল স্ক্যান করেছে।",
-            "behavior_ai": f"সুইং পয়েন্ট {swing_number} এ বায়ার ও সেলারের মধ্যে তীব্র প্রতিদ্বন্দ্বিতা রয়েছে।",
-            "otc_ai": "ওটিসি সার্ভার ম্যানিপুলেশন জোন ডিটেক্ট করায় সেফটি ব্লক সক্রিয় হয়েছে।",
-            "boss_msg": "২০টি এআই-এর মধ্যে পূর্ণাঙ্গ ঐক্যমত না থাকায় মাস্টার বস এআই ট্রেড হোল্ড (WAIT) করতে বলেছে।"
-        })
-
-    return jsonify({
-        "action": "TRADE",
-        "pair": pair,
-        "signal_type": final_decision,
-        "consensus": consensus,
-        "swing_no": swing_number,
-        "vision_ai": "২০টি কনভোলিউশনাল নিউরাল নেটওয়ার্ক (CNN) দ্বারা স্ক্রিনশট শতভাগ ভ্যালিডেটেড।",
-        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে মোমেন্টাম ও প্রিভিয়াস ক্যান্ডেল বিহেভিয়ার শতভাগ অনুকূলে।",
-        "otc_ai": "কোটেক্স ওটিসি প্রাইস ফিড ও ফেক ব্রেকআউট ফিল্টার সফলভাবে পাস হয়েছে।",
-        "boss_msg": boss_msg
-    })
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+            countdownTimer.innerHTML = "
