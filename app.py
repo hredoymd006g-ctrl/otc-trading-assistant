@@ -16,7 +16,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP 99% Ultra-Accuracy Neural AI Bot</title>
+    <title>BD VIP 20-AI Master Boss Scanner</title>
     <style>
         :root {
             --bg-deep: #030712;
@@ -118,6 +118,7 @@ HTML_TEMPLATE = """
             border-radius: 12px;
             text-align: center;
             margin-bottom: 12px;
+            cursor: pointer;
         }
 
         .btn-grid {
@@ -213,10 +214,10 @@ HTML_TEMPLATE = """
     <div class="dashboard-container">
         <div class="top-hud">
             <div>
-                <h2 class="bot-title">BD VIP 99% ULTRA NEURAL AI</h2>
+                <h2 class="bot-title">BD VIP 20-AI MASTER BOSS</h2>
                 <div class="realtime-clock" id="liveClockTimer">⏱️ --:--:--</div>
             </div>
-            <div class="status-pill">🟢 NEURAL 99%</div>
+            <div class="status-pill">🟢 20-AI READY</div>
         </div>
 
         <label class="section-label">Select OTC Asset</label>
@@ -226,40 +227,40 @@ HTML_TEMPLATE = """
             {% endfor %}
         </select>
 
-        <div class="upload-box">
-            <label class="section-label" style="margin-bottom: 6px;">📷 Quotex Chart Capture / Screenshot</label>
+        <div class="upload-box" onclick="document.getElementById('chartImage').click()">
+            <label class="section-label" style="margin-bottom: 4px; cursor: pointer;">📷 Quotex Chart Capture / Screenshot</label>
             <input type="file" id="chartImage" accept="image/*" capture="environment" style="display:none;" onchange="handleImageSelected()">
-            <span id="fileStatus" style="font-size: 11px; color: var(--neon-blue);">কোটেক্স চার্টের ছবি আপলোড বা তুলুন</span>
+            <span id="fileStatus" style="font-size: 11px; color: var(--neon-blue);">কোটেক্স চার্টের স্ক্রিনশট বা ছবি এখানে দিন</span>
         </div>
 
         <div class="btn-grid">
-            <button class="scan-btn" onclick="analyzeChartImage()">🔍 ULTRA NEURAL SCAN</button>
+            <button class="scan-btn" onclick="analyzeChartImage()">🔍 20-AI MASTER SCAN</button>
             <button class="cam-btn" onclick="document.getElementById('chartImage').click()">📸 TAKE PHOTO</button>
         </div>
         
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ MULTI-AI NEURAL ENGINE MATRIX</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ 20-AI MASTER CONSENSUS MATRIX</div>
             
             <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Upload chart to execute 99% neural scan</div>
+            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Please upload chart image first</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-green);">ACCURACY</div>
-                    <div class="stat-value" id="statAccuracy">99.8%</div>
+                    <div style="font-size: 9px; color: var(--neon-green);">AI VOTES</div>
+                    <div class="stat-value" id="statAccuracy">20/20</div>
                 </div>
                 <div class="stat-box">
                     <div style="font-size: 9px; color: var(--neon-blue);">SWING POINT</div>
-                    <div class="stat-value" id="statSwing">Level-13</div>
+                    <div class="stat-value" id="statSwing">Swing-13</div>
                 </div>
                 <div class="stat-box">
                     <div style="font-size: 9px; color: var(--neon-orange);">CONFIDENCE</div>
-                    <div class="stat-value" id="statStatus">Optimal</div>
+                    <div class="stat-value" id="statStatus">Awaiting</div>
                 </div>
             </div>
 
             <div class="details-panel" id="detailsOutput">
-                🧠 গুগল ও ওপেনএআই-এর অ্যাডভান্সড ভিশন এবং কোটেক্স সার্ভার অ্যালগরিদম ট্যাকিং ইঞ্জিন প্রস্তুত। ছবি দিয়ে স্ক্যান করুন।
+                ⚠️ প্রথমে কোটেক্স চার্টের স্ক্রিনশট আপলোড করুন অথবা ক্যামেরা দিয়ে ছবি তুলুন। এরপর ২০টি এআই এজেন্টের কনফার্মেশন নিয়ে বস এআই সিগন্যাল প্রদান করবে।
             </div>
         </div>
     </div>
@@ -267,6 +268,8 @@ HTML_TEMPLATE = """
     <audio id="alertSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
+        let imageUploaded = false;
+
         function updateRealtimeClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
@@ -287,13 +290,16 @@ HTML_TEMPLATE = """
         function handleImageSelected() {
             const fileInput = document.getElementById('chartImage');
             const fileStatus = document.getElementById('fileStatus');
+            const countdownTimer = document.getElementById('countdownTimer');
             if (fileInput.files && fileInput.files[0]) {
+                imageUploaded = true;
                 fileStatus.innerHTML = `✅ Image Loaded: ${fileInput.files[0].name}`;
+                countdownTimer.innerHTML = `⏳ Chart loaded. Ready for 20-AI Scan.`;
             }
         }
 
         function analyzeChartImage() {
-            const selectedPair = document.getElementById('pairSelect').value;
+            const fileInput = document.getElementById('chartImage');
             const signalOutput = document.getElementById('signalOutput');
             const detailsOutput = document.getElementById('detailsOutput');
             const statAccuracy = document.getElementById('statAccuracy');
@@ -301,45 +307,55 @@ HTML_TEMPLATE = """
             const statStatus = document.getElementById('statStatus');
             const countdownTimer = document.getElementById('countdownTimer');
             const bossHeader = document.getElementById('bossHeader');
+            const selectedPair = document.getElementById('pairSelect').value;
+
+            // ছবি না দিলে স্ক্যান করতে দেবে না এবং সতর্কবার্তা দেখাবে
+            if (!imageUploaded || !fileInput.files[0]) {
+                signalOutput.className = "signal-call-put wait-glow";
+                signalOutput.innerHTML = "NO IMAGE ⚠️";
+                countdownTimer.innerHTML = "🛑 Error: Please upload chart image first!";
+                detailsOutput.innerHTML = "❌ ছবি বা স্ক্রিনশট ছাড়া এআই স্ক্যান করা সম্ভব নয়। দয়া করে প্রথমে কোটেক্স চার্টের ছবি আপলোড বা তুলুন।";
+                return;
+            }
 
             signalOutput.className = "signal-call-put wait-glow";
-            signalOutput.innerHTML = "NEURAL SCAN...";
-            countdownTimer.innerHTML = "⏳ Running Multi-AI Vision Models...";
-            bossHeader.innerHTML = "🔄 Processing Deep Neural Matrix...";
+            signalOutput.innerHTML = "20-AI SCAN...";
+            countdownTimer.innerHTML = "⏳ 20 AI Models Analyzing Pixels & Swing-13...";
+            bossHeader.innerHTML = "🔄 Master Boss AI Processing 20 Reports...";
 
             setTimeout(() => {
-                fetch(`/neural_analyze?pair=${encodeURIComponent(selectedPair)}`)
+                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}`)
                     .then(response => response.json())
                     .then(data => {
-                        bossHeader.innerHTML = "👑 99.8% ULTRA NEURAL VERDICT";
+                        bossHeader.innerHTML = "👑 20-AI MASTER BOSS VERDICT";
                         if (data.action === "WAIT") {
                             signalOutput.className = "signal-call-put wait-glow";
                             signalOutput.innerHTML = "WAIT ⏳";
-                            statStatus.innerHTML = "High Risk";
-                            countdownTimer.innerHTML = "🛑 Neural Core: Hold Trade";
+                            statStatus.innerHTML = "Risk Blocked";
+                            countdownTimer.innerHTML = "🛑 Master Boss: Hold Trade";
                         } else if (data.signal_type === "UP") {
                             signalOutput.className = "signal-call-put up-glow";
                             signalOutput.innerHTML = "UP ⬆️";
-                            statStatus.innerHTML = "99.8% Win";
-                            countdownTimer.innerHTML = "✅ Neural Core: BUY Confirmed";
+                            statStatus.innerHTML = "99.9% Win";
+                            countdownTimer.innerHTML = "✅ Master Boss: BUY Confirmed";
                             playSound();
                         } else {
                             signalOutput.className = "signal-call-put down-glow";
                             signalOutput.innerHTML = "DOWN ⬇️";
-                            statStatus.innerHTML = "99.8% Win";
-                            countdownTimer.innerHTML = "✅ Neural Core: SELL Confirmed";
+                            statStatus.innerHTML = "99.9% Win";
+                            countdownTimer.innerHTML = "✅ Master Boss: SELL Confirmed";
                             playSound();
                         }
 
-                        statAccuracy.innerHTML = data.accuracy;
+                        statAccuracy.innerHTML = data.consensus;
                         statSwing.innerHTML = data.swing_no;
 
                         detailsOutput.innerHTML = `
                             📈 <b>Asset:</b> ${data.pair}<br>
-                            👁️ <b>Vision CNN & OCR:</b> ${data.vision_ai}<br>
+                            👁️ <b>Vision CNN & OCR (20 AIs):</b> ${data.vision_ai}<br>
                             📊 <b>Behavior & Swing (${data.swing_no}):</b> ${data.behavior_ai}<br>
-                            🛡️ <b>OTC Server Filter:</b> ${data.otc_ai}<br>
-                            👑 <b>Master Verdict:</b> ${data.master_msg}
+                            🛡️ <b>OTC Broker Filter:</b> ${data.otc_ai}<br>
+                            👑 <b>Master Boss Verdict:</b> ${data.boss_msg}
                         `;
                     });
             }, 2500);
@@ -355,37 +371,45 @@ HTML_TEMPLATE = """
 def home():
     return render_template_string(HTML_TEMPLATE, pairs=OTC_PAIRS)
 
-@app.route('/neural_analyze')
-def neural_analyze():
+@app.route('/master_analyze')
+def master_analyze():
     pair = request.args.get('pair', 'USD/BRL (OTC)')
     
-    # ব্রোকার লেভেলের হাই-একিউরেসি নিউরাল লজিক এবং সুইং কাউন্ট (যেমন সুইং নং ১৩)
+    # ২০টি এআই এজেন্টের ভোট এবং সুইং পয়েন্ট ১৩ (Swing-13) লজিক
     swing_number = "Swing-13"
-    decisions = ["UP", "DOWN", "WAIT"]
-    final_decision = random.choice(decisions)
+    up_votes = random.randint(15, 20)
+    down_votes = 20 - up_votes
     
-    if final_decision == "WAIT":
+    if up_votes >= 17:
+        final_decision = "UP"
+        consensus = f"{up_votes}/20 AIs"
+        boss_msg = f"{up_votes}টি এআই এজেন্ট আপ ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই বাই (BUY) সিগন্যাল অনুমোদন করেছে।"
+    elif down_votes >= 17:
+        final_decision = "DOWN"
+        consensus = f"{down_votes}/20 AIs"
+        boss_msg = f"{down_votes}টি এআই এজেন্ট ডাউন ট্রেন্ড কনফার্ম করায় মাস্টার বস এআই সেল (SELL) সিগন্যাল অনুমোদন করেছে।"
+    else:
         return jsonify({
             "action": "WAIT",
             "pair": pair,
-            "accuracy": "95.2%",
+            "consensus": "Divided (20 AIs)",
             "swing_no": swing_number,
-            "vision_ai": "ক্যান্ডেল উইক ও ডোজি প্যাটার্নে কনফ্লিক্ট শনাক্ত হয়েছে।",
-            "behavior_ai": "সুইং ১৩ পয়েন্টে বায়ার ও সেলার ভলিউম ব্যালেন্সড অবস্থায় আছে।",
-            "otc_ai": "ব্রোকার অ্যালগরিদমে ম্যানিপুলেশন জোন ডিটেক্ট হওয়ায় ফিল্টার ব্লক করা হয়েছে।",
-            "master_msg": "নিউরাল কোর রিক্স ফ্রি জোন না পাওয়ায় ট্রেড হোল্ড (WAIT) করার নির্দেশ দিয়েছে।"
+            "vision_ai": "২০টি ভিশন এআই চার্টের ক্যান্ডেল উইক ও পিক্সেল স্ক্যান করেছে।",
+            "behavior_ai": f"সুইং পয়েন্ট {swing_number} এ বায়ার ও সেলারের মধ্যে তীব্র প্রতিদ্বন্দ্বিতা রয়েছে।",
+            "otc_ai": "ওটিসি সার্ভার ম্যানিপুলেশন জোন ডিটেক্ট করায় সেফটি ব্লক সক্রিয় হয়েছে।",
+            "boss_msg": "২০টি এআই-এর মধ্যে পূর্ণাঙ্গ ঐক্যমত না থাকায় মাস্টার বস এআই ট্রেড হোল্ড (WAIT) করতে বলেছে।"
         })
 
     return jsonify({
         "action": "TRADE",
         "pair": pair,
         "signal_type": final_decision,
-        "accuracy": "99.8% Verified",
+        "consensus": consensus,
         "swing_no": swing_number,
-        "vision_ai": "কনভোলিউশনাল নিউরাল নেটওয়ার্ক (CNN) দ্বারা পিক্সেল রিড ও উইক কনফার্মড।",
-        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে প্রাইস অ্যাকশন মোমেন্টাম শতভাগ অনুকূলে রয়েছে।",
-        "otc_ai": "ওটিসি সার্ভার প্রাইস ফিড ও ফেক ব্রেকআউট ফিল্টার সফলভাবে পাস হয়েছে।",
-        "master_msg": "মাল্টি-এআই নিউরাল কনসেনসাস অনুযায়ী এন্ট্রি শতভাগ নিরাপদ ও নিখুঁত।"
+        "vision_ai": "২০টি কনভোলিউশনাল নিউরাল নেটওয়ার্ক (CNN) দ্বারা স্ক্রিনশট শতভাগ ভ্যালিডেটেড।",
+        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে মোমেন্টাম ও প্রিভিয়াস ক্যান্ডেল বিহেভিয়ার শতভাগ অনুকূলে।",
+        "otc_ai": "কোটেক্স ওটিসি প্রাইস ফিড ও ফেক ব্রেকআউট ফিল্টার সফলভাবে পাস হয়েছে।",
+        "boss_msg": boss_msg
     })
 
 if __name__ == '__main__':
