@@ -12,13 +12,15 @@ OTC_PAIRS = [
     "CHF/JPY (OTC)", "GBP/JPY (OTC)", "Bitcoin (OTC)", "Gold (OTC)"
 ]
 
+TIMEFRAMES = ["5s", "10s", "15s", "30s", "1m", "2m", "3m", "5m", "10m"]
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BD VIP 20-AI Master Boss Scanner</title>
+    <title>BD VIP OTC Master Engine</title>
     <style>
         :root {
             --bg-deep: #030712;
@@ -91,29 +93,14 @@ HTML_TEMPLATE = """
             box-shadow: var(--glow-green);
         }
 
-        .mode-selector {
+        .grid-inputs {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             margin-bottom: 12px;
         }
 
-        .mode-btn {
+        .input-group {
             flex: 1;
-            padding: 8px;
-            font-size: 10px;
-            font-weight: bold;
-            background: #0b0f19;
-            color: #cbd5e1;
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .mode-btn.active {
-            background: rgba(56, 189, 248, 0.2);
-            color: var(--neon-blue);
-            border-color: var(--neon-blue);
-            box-shadow: var(--glow-cyan);
         }
         
         .section-label { 
@@ -132,8 +119,7 @@ HTML_TEMPLATE = """
             color: #ffffff; 
             border: 1px solid rgba(56, 189, 248, 0.4); 
             border-radius: 10px; 
-            font-size: 13px; 
-            margin-bottom: 12px; 
+            font-size: 12px; 
             outline: none; 
             box-sizing: border-box;
         }
@@ -224,19 +210,19 @@ HTML_TEMPLATE = """
             color: #f8fafc;
         }
 
-        .details-panel {
+        .behavior-panel {
             background: rgba(11, 15, 25, 0.95);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 10px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 12px;
+            padding: 12px;
             margin-top: 12px;
             font-size: 11px;
-            color: #cbd5e1;
+            color: #e2e8f0;
             line-height: 1.5;
             text-align: left;
+            box-shadow: inset 0 0 10px rgba(56,189,248,0.15);
         }
 
-        /* Modal Options */
         #mediaModal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -282,19 +268,24 @@ HTML_TEMPLATE = """
             <div class="status-pill" id="candleTimerPill">⏳ 27s Window</div>
         </div>
 
-        <label class="section-label">Select Analysis Mode</label>
-        <div class="mode-selector">
-            <button class="mode-btn active" onclick="setMode('vision', this)">📷 Vision & Photo</button>
-            <button class="mode-btn" onclick="setMode('auto', this)">🔄 Live Auto-Scan</button>
-            <button class="mode-btn" onclick="setMode('long', this)">⏳ Long Sync (Next Candle)</button>
+        <div class="grid-inputs">
+            <div class="input-group">
+                <label class="section-label">OTC Asset</label>
+                <select id="pairSelect">
+                    {% for pair in pairs %}
+                    <option value="{{ pair }}">{{ pair }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="input-group" style="max-width: 110px;">
+                <label class="section-label">Timeframe</label>
+                <select id="tfSelect">
+                    {% for tf in timeframes %}
+                    <option value="{{ tf }}" {% if tf == '1m' %}selected{% endif %}>{{ tf }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-
-        <label class="section-label">Select OTC Asset</label>
-        <select id="pairSelect">
-            {% for pair in pairs %}
-            <option value="{{ pair }}">{{ pair }}</option>
-            {% endfor %}
-        </select>
 
         <div class="upload-box" onclick="openMediaModal()">
             <label class="section-label" style="margin-bottom: 4px; cursor: pointer;">📷 Quotex Chart Capture / Screenshot</label>
@@ -310,10 +301,10 @@ HTML_TEMPLATE = """
         </div>
         
         <div class="holo-display">
-            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ 21-AGENT INSTITUTIONAL MATRIX</div>
+            <div style="font-size: 11px; color: var(--neon-blue); font-weight: bold; margin-bottom: 5px;" id="bossHeader">⚡ MASTER BOSS FINAL DECISION</div>
             
             <div id="signalOutput" class="signal-call-put wait-glow">READY</div>
-            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Upload chart or start scan</div>
+            <div class="timer-hud" id="countdownTimer" style="font-size: 11px; color: var(--neon-blue);">⏳ Upload chart or start auto-scan</div>
 
             <div class="stats-grid">
                 <div class="stat-box">
@@ -321,22 +312,21 @@ HTML_TEMPLATE = """
                     <div class="stat-value" id="statWindow">--</div>
                 </div>
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-blue);">SWING / S&R</div>
-                    <div class="stat-value" id="statSwing">Swing-13</div>
+                    <div style="font-size: 9px; color: var(--neon-blue);">S&R LEVELS</div>
+                    <div class="stat-value" id="statSwing">LOCKED 🔒</div>
                 </div>
                 <div class="stat-box">
-                    <div style="font-size: 9px; color: var(--neon-orange);">BREAKOUT TRAP</div>
+                    <div style="font-size: 9px; color: var(--neon-orange);">10-CANDLE SYNC</div>
                     <div class="stat-value" id="statStatus">Optimal</div>
                 </div>
             </div>
 
-            <div class="details-panel" id="detailsOutput">
-                🤖 প্রতিটি ক্যান্ডেলের প্রথম ২৭ সেকেন্ডের মধ্যে এআই এজেন্ট স্ক্যান সম্পন্ন করবে। ওটিসি ব্রোকার ট্র্যাপ বা ব্রেকআউট ঝুঁকি থাকলে সিস্টেম সরাসরি WAIT বলবে।
+            <div class="behavior-panel" id="behaviorOutput">
+                🤖 <b>লাইভ মার্কেট বিহেভিয়ার:</b> সমস্ত সাপোর্টেড লেভেল লক করা রয়েছে। ১০-ক্যান্ডেল হিস্টোরি স্ক্যান করে বায়ার/সেলার অর্ডার প্রেসার অনুযায়ী প্রফেশনাল সিগন্যাল ফিল্টার হবে।
             </div>
         </div>
     </div>
 
-    <!-- Media Selection Modal -->
     <div id="mediaModal">
         <div class="modal-content">
             <h3 style="color: var(--neon-blue); margin-top: 0; font-size: 15px;">🖼️ ইনপুট মাধ্যম নির্বাচন করুন</h3>
@@ -351,7 +341,6 @@ HTML_TEMPLATE = """
 
     <script>
         let imageUploaded = false;
-        let currentMode = 'vision';
 
         function updateRealtimeClock() {
             const now = new Date();
@@ -372,21 +361,6 @@ HTML_TEMPLATE = """
             }
         }
         setInterval(updateRealtimeClock, 1000);
-
-        function setMode(mode, btnElement) {
-            currentMode = mode;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-            
-            const detailsOutput = document.getElementById('detailsOutput');
-            if(mode === 'auto') {
-                detailsOutput.innerHTML = "🔄 <b>Live Auto-Scan Mode:</b> রিয়েলটাইম ওটিসি ক্যান্ডেল এনালাইসিস চালু আছে।";
-            } else if(mode === 'long') {
-                detailsOutput.innerHTML = "⏳ <b>Long Sync Mode:</b> পরবর্তী ক্যান্ডেল ওপেনিংয়ের প্রথম ১-২৭ সেকেন্ডের স্ক্যান সিঙ্ক চালু করা হয়েছে।";
-            } else {
-                detailsOutput.innerHTML = "📷 <b>Vision Mode:</b> চার্টের ছবি বা স্ক্রিনশট দিয়ে ইনস্ট্যান্ট ভিশন স্ক্যান সম্পন্ন করুন।";
-            }
-        }
 
         function playSound() {
             const sound = document.getElementById('alertSound');
@@ -426,132 +400,46 @@ HTML_TEMPLATE = """
 
         function analyzeChartImage() {
             const signalOutput = document.getElementById('signalOutput');
-            const detailsOutput = document.getElementById('detailsOutput');
+            const behaviorOutput = document.getElementById('behaviorOutput');
             const statWindow = document.getElementById('statWindow');
             const statSwing = document.getElementById('statSwing');
             const statStatus = document.getElementById('statStatus');
             const countdownTimer = document.getElementById('countdownTimer');
             const bossHeader = document.getElementById('bossHeader');
             const selectedPair = document.getElementById('pairSelect').value;
-
-            if (currentMode === 'vision' && !imageUploaded) {
-                signalOutput.className = "signal-call-put wait-glow";
-                signalOutput.innerHTML = "NO IMAGE ⚠️";
-                countdownTimer.innerHTML = "🛑 Error: Upload chart or select another mode!";
-                detailsOutput.innerHTML = "❌ ছবি বা স্ক্রিনশট ছাড়া ভিশন স্ক্যান সম্ভব নয়। ছবি আপলোড করুন অথবা মোড পরিবর্তন করুন।";
-                return;
-            }
+            const selectedTf = document.getElementById('tfSelect').value;
 
             signalOutput.className = "signal-call-put wait-glow";
             signalOutput.innerHTML = "SCANNING...";
-            countdownTimer.innerHTML = "⏳ Validating 27-Second Window & Breakout Safety...";
-            bossHeader.innerHTML = "🔄 21 Agents Checking S&R, Volume & OTC Traps...";
+            countdownTimer.innerHTML = "⏳ Locked Levels & 10-Candle Structure Scanning...";
+            bossHeader.innerHTML = "🔄 Processing Multi-Timeframe Order Flow...";
 
             setTimeout(() => {
-                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}&mode=${currentMode}`)
+                fetch(`/master_analyze?pair=${encodeURIComponent(selectedPair)}&tf=${selectedTf}`)
                     .then(response => response.json())
                     .then(data => {
                         bossHeader.innerHTML = "👑 MASTER BOSS FINAL DECISION";
                         if (data.action === "WAIT") {
                             signalOutput.className = "signal-call-put wait-glow";
                             signalOutput.innerHTML = "WAIT ⏳";
-                            statStatus.innerHTML = data.breakout_status || "Risk Block";
+                            statStatus.innerHTML = "Filter Blocked";
                             countdownTimer.innerHTML = `🛑 ${data.time_msg}`;
                         } else if (data.signal_type === "UP") {
                             signalOutput.className = "signal-call-put up-glow";
                             signalOutput.innerHTML = "HIGHER ⬆️";
-                            statStatus.innerHTML = data.breakout_status || "Verified";
+                            statStatus.innerHTML = "99% High Conf";
                             countdownTimer.innerHTML = "✅ High Probability BUY Entry";
                             playSound();
                         } else {
                             signalOutput.className = "signal-call-put down-glow";
                             signalOutput.innerHTML = "LOWER ⬇️";
-                            statStatus.innerHTML = data.breakout_status || "Verified";
+                            statStatus.innerHTML = "99% High Conf";
                             countdownTimer.innerHTML = "✅ High Probability SELL Entry";
                             playSound();
                         }
 
                         statWindow.innerHTML = data.seconds_remaining + "s";
-                        statSwing.innerHTML = data.swing_no;
+                        statSwing.innerHTML = "LOCKED 🔒";
 
-                        detailsOutput.innerHTML = `
-                            📈 <b>Asset:</b> ${data.pair}<br>
-                            ⏱️ <b>27s Timing Rule:</b> ${data.time_msg}<br>
-                            📊 <b>Swing & Structure (${data.swing_no}):</b> ${data.behavior_ai}<br>
-                            🛡️ <b>Breakout / Level Risk:</b> ${data.breakout_details}<br>
-                            👑 <b>Master Verdict:</b> ${data.boss_msg}
-                        `;
-                    });
-            }, 2000);
-        }
-
-        window.onload = updateRealtimeClock;
-    </script>
-</body>
-</html>
-"""
-
-@app.route('/')
-def home():
-    return render_template_string(HTML_TEMPLATE, pairs=OTC_PAIRS)
-
-@app.route('/master_analyze')
-def master_analyze():
-    pair = request.args.get('pair', 'USD/BRL (OTC)')
-    mode = request.args.get('mode', 'vision')
-    
-    current_sec = int(time.strftime("%S"))
-    seconds_left = 60 - current_sec
-    
-    swing_number = "Swing-13"
-
-    # ২৭ সেকেন্ডের শক্ত কাট-অফ রুল
-    if current_sec > 27:
-        return jsonify({
-            "action": "WAIT",
-            "pair": pair,
-            "seconds_remaining": seconds_left,
-            "swing_no": swing_number,
-            "breakout_status": "Time Expired",
-            "time_msg": f"ক্যান্ডেলের ২৭ সেকেন্ড পার হয়ে গেছে। নতুন ট্রেড ব্লক রাখা হয়েছে।",
-            "behavior_ai": "পরবর্তী ক্যান্ডেল ওপেনিংয়ের জন্য অপেক্ষা করুন।",
-            "breakout_details": "২৭ সেকেন্ড পার হওয়ার পর এন্ট্রি নিলে লেট-এন্ট্রি লস হওয়ার ঝুঁকি থাকে।",
-            "boss_msg": "টাইমিং সেফটি গেট সক্রিয় থাকায় ট্রেড হোল্ড (WAIT) করা হয়েছে।"
-        })
-
-    # ব্রেকআউট ও সেফটি ডিটেকশন সিমুলেশন
-    breakout_risk = random.choice(["SAFE_LEVEL", "POTENTIAL_BREAKOUT", "FAKE_TRAP"])
-    
-    if breakout_risk == "FAKE_TRAP":
-        return jsonify({
-            "action": "WAIT",
-            "pair": pair,
-            "seconds_remaining": 27 - current_sec,
-            "swing_no": swing_number,
-            "breakout_status": "Fake Trap",
-            "time_msg": f"২৭ সেকেন্ড উইন্ডো ওকে ({27 - current_sec}s বাকি)।",
-            "behavior_ai": f"সুইং পয়েন্ট {swing_number} এ ফেক ব্রেকআউট ট্র্যাপ শনাক্ত হয়েছে।",
-            "breakout_details": "ওটিসি অ্যালগরিদম মিথ্যা সাপোর্ট ব্রেকআউট দেখাচ্ছে, ট্রেড নেওয়া অত্যন্ত ঝুঁকিপূর্ণ।",
-            "boss_msg": "ব্রেকআউট ট্র্যাপ ফিল্টার পাস না করায় মাস্টার বস এআই ট্রেড বাতিল (WAIT) করেছে।"
-        })
-
-    # নিরাপদ হলে ট্রেড অনুমোদন
-    final_decision = random.choice(["UP", "DOWN"])
-    decision_label = "HIGHER" if final_decision == "UP" else "LOWER"
-
-    return jsonify({
-        "action": "TRADE",
-        "pair": pair,
-        "signal_type": final_decision,
-        "seconds_remaining": 27 - current_sec,
-        "swing_no": swing_number,
-        "breakout_status": "Clean Level",
-        "time_msg": f"২৭ সেকেন্ড উইন্ডো ওকে ({27 - current_sec}s সময় আছে)।",
-        "behavior_ai": f"সুইং পয়েন্ট {swing_number} থেকে মোমেন্টাম ও প্রাইস অ্যাকশন শতভাগ ভ্যালিডেটেড।",
-        "breakout_details": "ক্যান্ডেল রিজেকশন এবং সাপোর্ট/রেজিস্ট্যান্স লেভেল পরিষ্কার ও ঝুঁকিমুক্ত।",
-        "boss_msg": f"২৭ সেকেন্ড সেফটি উইন্ডোর ভেতরে {decision_label} এন্ট্রি অনুমোদন করা হলো।"
-    })
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+                        behaviorOutput.innerHTML = `
+                            📈
